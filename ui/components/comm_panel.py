@@ -67,7 +67,7 @@ class CommPanelFrame:
             fg="#f8fafc",
             font=("Segoe UI", 11, "bold"),
         )
-        self.diag_frame.pack(side="left", fill="both", expand=True, padx=(0, 0))
+        # self.diag_frame.pack(side="left", fill="both", expand=True, padx=(0, 0))
 
         self.medium_var = tk.StringVar(value="UART")
         self.baud_var = tk.StringVar(value=str(BAUDRATE))
