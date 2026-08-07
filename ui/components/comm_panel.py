@@ -144,13 +144,21 @@ class CommPanelFrame:
             button_frame_comm,
             text="CAN IDs",
             command=self.open_can_id_dialog,
-            bootstyle="secondary-outline",
+            bootstyle="primary",
             width=10,
         )
-        self.can_id_button.pack(side="left")
+        if self.medium_var.get() == "CAN":
+            self.can_id_button.pack(side="left")
 
     def _on_medium_selected(self, event=None):
         medium = self.medium_var.get()
+        # Show CAN IDs button only for CAN
+        if medium == "CAN":
+            if not self.can_id_button.winfo_manager():
+                self.can_id_button.pack(side="left")
+        else:
+            if self.can_id_button.winfo_manager():
+                self.can_id_button.pack_forget()
         if medium == "CAN":
             if self.port_combobox:
                 self.port_combobox.configure(values=CAN_CHANNELS)
