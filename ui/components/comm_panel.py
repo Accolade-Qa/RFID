@@ -30,32 +30,33 @@ def detect_com_ports():
 class CommPanelFrame:
     """Component managing serial communication settings and screenshot-matched Diagnostic Result Cards."""
 
-    def __init__(self, parent_frame, reader, log_console_getter, on_connection_change_cb):
+    def __init__(self, parent_frame, reader, log_console_getter, on_connection_change_cb, diagnostic_parent=None):
         self.reader = reader
         self.get_log_console = log_console_getter
         self.on_connection_change_cb = on_connection_change_cb
 
         self.reader.set_disconnect_callback(self._on_async_disconnect)
 
-        # Main horizontal container holding Communication & Diagnostic Panel
+        # The communication controls stay in the top row; diagnostics may be
+        # placed in a separate full-width row by the application layout.
         self.container_frame = ttkb.Frame(parent_frame)
-        self.container_frame.pack(fill="x", expand=True)
+        self.container_frame.pack(side="left", fill="both", expand=True, padx=(0, 0))
 
         # Communication Settings Frame
         self.communication_frame = tk.LabelFrame(
             self.container_frame,
             text="Communication Settings",
             padx=14,
-            pady=12,
+            pady=10,
             bg="#1f2937",
             fg="#f8fafc",
             font=("Segoe UI", 11, "bold"),
         )
-        self.communication_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
+        self.communication_frame.pack(side="top", fill="both", expand=True, padx=(0, 0))
 
         # Diagnostic Result Section (Matching Screenshots)
         self.diag_frame = tk.LabelFrame(
-            self.container_frame,
+            diagnostic_parent or self.container_frame,
             text="Diagnostic Results",
             padx=14,
             pady=12,
@@ -63,7 +64,7 @@ class CommPanelFrame:
             fg="#f8fafc",
             font=("Segoe UI", 11, "bold"),
         )
-        self.diag_frame.pack(side="left", fill="both", expand=True, padx=(0, 0))
+        self.diag_frame.pack(side="top", fill="both", expand=True, padx=(0, 0))
 
         self.medium_var = tk.StringVar(value="UART")
         self.baud_var = tk.StringVar(value=str(BAUDRATE))
@@ -88,12 +89,24 @@ class CommPanelFrame:
             ("Baud Rate", self.baud_var, available_baud_rates),
         ]
 
-        for idx, (label_text, variable, values) in enumerate(fields):
-            row = 0 if idx < 2 else 1
-            col = (idx % 2) * 2
+        field_positions = {
+            "Medium": (0, 0),
+            "COM Port": (0, 2),
+            "Baud Rate": (2, 0),
+        }
+
+        self.communication_frame.columnconfigure(0, weight=1)
+        self.communication_frame.columnconfigure(2, weight=1)
+
+        for label_text, variable, values in fields:
+            row, col = field_positions[label_text]
+
+            label_pady = (0, 8) if label_text != "Baud Rate" else (12, 8)
+            combo_pady = (0, 8) if label_text != "Baud Rate" else (0, 16)
+            combo_padx = (0, 22) if label_text == "Medium" else (0, 10)
 
             ttkb.Label(self.communication_frame, text=label_text, style="Field.TLabel").grid(
-                row=row, column=col, sticky="w", pady=(0, 6), padx=(0, 4)
+                row=row, column=col, sticky="w", pady=label_pady, padx=(0, 4)
             )
             combobox = ttkb.Combobox(
                 self.communication_frame,
@@ -103,12 +116,12 @@ class CommPanelFrame:
                 bootstyle="info",
                 width=13,
             )
-            combobox.grid(row=row, column=col + 1, sticky="w", padx=(4, 10), pady=(0, 6))
+            combobox.grid(row=row + 1, column=col, sticky="ew", padx=combo_padx, pady=combo_pady)
             if label_text == "COM Port":
                 self.port_combobox = combobox
 
         button_frame_comm = ttkb.Frame(self.communication_frame)
-        button_frame_comm.grid(row=2, column=0, columnspan=4, pady=(8, 0), sticky="ew")
+        button_frame_comm.grid(row=4, column=0, columnspan=4, pady=(12, 0), sticky="w")
 
         self.connect_button = ttkb.Button(
             button_frame_comm,
@@ -117,7 +130,7 @@ class CommPanelFrame:
             bootstyle="success",
             width=11,
         )
-        self.connect_button.pack(side="left", padx=(0, 8))
+        self.connect_button.pack(side="left", padx=(0, 20))
 
         self.disconnect_button = ttkb.Button(
             button_frame_comm,
@@ -175,7 +188,7 @@ class CommPanelFrame:
             bg="#111827",
             anchor="w",
             justify="left",
-            wraplength=420,
+            wraplength=0,
         )
         self.subtext_label.pack(fill="x", anchor="w", pady=(2, 0))
 
@@ -236,6 +249,15 @@ class CommPanelFrame:
             sub = "Negative response or CRC verification error."
 
         self.subtext_label.configure(text=sub, fg="#FCA5A5")
+
+    def show_no_tag_found(self):
+        self.accent_bar.configure(bg="#EF4444")
+        self.draw_icon("fail")
+        self.title_label.configure(text="FAIL", fg="#EF4444")
+        self.subtext_label.configure(
+            text="Negative Response: No Tag Found",
+            fg="#FCA5A5",
+        )
 
     def show_timeout(self, cmd_name: str = ""):
         self.accent_bar.configure(bg="#EF4444")

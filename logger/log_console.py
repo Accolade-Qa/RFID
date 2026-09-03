@@ -1,11 +1,14 @@
+import csv
 import json
 import os
 import threading
 from datetime import datetime
 from tkinter import scrolledtext
 
+from config import CSV_DEFAULT_PATH, JSON_DEFAULT_PATH, LOG_DEFAULT_PATH
+
 MAX_LOG_LINES = 1000
-JSON_LOG_FILE = os.path.join(os.getcwd(), "activity_records.json")
+JSON_LOG_FILE = JSON_DEFAULT_PATH
 
 
 class LogConsole(scrolledtext.ScrolledText):
@@ -23,11 +26,12 @@ class LogConsole(scrolledtext.ScrolledText):
             fg="#F9FAFB",
             insertbackground="#F9FAFB",
         )
-        self.file_path = None
-        self.auto_save = False
+        self.file_path = LOG_DEFAULT_PATH
+        self.auto_save = True
         self.max_lines = max_lines
         self.line_count = 0
         self.json_file_path = JSON_LOG_FILE
+        self.csv_file_path = CSV_DEFAULT_PATH
         self._lock = threading.Lock()
 
     def append(self, message: str):
@@ -64,7 +68,6 @@ class LogConsole(scrolledtext.ScrolledText):
             "Operation": operation,
             "Command Sent": command_sent,
             "Response Received": response_received,
-            "Conversion": conversion,
             "Medium of transmission": medium,
             "Time Stamp": current_time,
         }
@@ -92,6 +95,54 @@ class LogConsole(scrolledtext.ScrolledText):
 
     def set_file_path(self, path: str):
         self.file_path = path
+
+    def append_csv(self, name: str, operation: str, command_sent: str,
+                   response_received: str = "", conversion: str = "",
+                   medium: str = "UART") -> bool:
+        """Append one structured response record to the application CSV log."""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        fieldnames = [
+            "Name",
+            "Operation",
+            "Command Sent",
+            "Response Received",
+            "Medium of transmission",
+            "Date and Time",
+        ]
+        record = {
+            "Name": name,
+            "Operation": operation,
+            "Command Sent": command_sent,
+            "Response Received": response_received,
+            "Medium of transmission": medium,
+            "Date and Time": timestamp,
+        }
+
+        try:
+            with self._lock:
+                existing_rows = []
+                has_existing_header = False
+                rewrite_file = False
+                if os.path.exists(self.csv_file_path) and os.path.getsize(self.csv_file_path) > 0:
+                    with open(self.csv_file_path, "r", newline="", encoding="utf-8") as csv_file:
+                        reader = csv.DictReader(csv_file)
+                        has_existing_header = reader.fieldnames is not None
+                        existing_rows = [
+                            {field: row.get(field, "") for field in fieldnames}
+                            for row in reader
+                        ]
+                        rewrite_file = reader.fieldnames != fieldnames
+
+                file_mode = "w" if rewrite_file else "a"
+                with open(self.csv_file_path, file_mode, newline="", encoding="utf-8") as csv_file:
+                    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+                    if rewrite_file or not has_existing_header:
+                        writer.writeheader()
+                        writer.writerows(existing_rows)
+                    writer.writerow(record)
+            return True
+        except Exception:
+            return False
 
     def enable_auto_save(self, enable: bool):
         self.auto_save = bool(enable)

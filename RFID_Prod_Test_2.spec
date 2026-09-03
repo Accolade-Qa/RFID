@@ -1,16 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-from PyInstaller.utils.hooks import collect_all
-
-
-ttkbootstrap_datas, ttkbootstrap_binaries, ttkbootstrap_hiddenimports = collect_all('ttkbootstrap')
 
 a = Analysis(
     ['main.py'],
     pathex=[],
-    binaries=ttkbootstrap_binaries,
-    datas=ttkbootstrap_datas + [('assets', 'assets')],
-    hiddenimports=ttkbootstrap_hiddenimports,
+    binaries=[],
+    datas=[('assets', 'assets')],
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -26,7 +22,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='RFID_READER',
+    name='RFID_Prod_Test_2',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -39,5 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['assets\\Acc_logo.ico'],
+    icon=['assets/Acc_logo.ico'],
 )

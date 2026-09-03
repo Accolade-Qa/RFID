@@ -36,7 +36,7 @@ def build_header_frame(parent_frame, base_dir: Path) -> ttkb.Frame:
 
     version_label = ttkb.Label(
         inner_container,
-        text="Version: 1.0.0",
+        text="Version: 2.0.0",
         style="Field.TLabel",
     )
     version_label.pack(side="right", pady=10)

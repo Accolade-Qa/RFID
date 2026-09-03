@@ -42,6 +42,8 @@ READ_COMMANDS = {
     "cert": ("24110106813623", "hex as it is", "TA Certification", 0x06),
 }
 
+HIDDEN_FIELD_NAMES = {"serial", "cert", "gvw", "vin", "registration", "axle"}
+
 AUTO_READ_FIELDS = ("tag_id", "serial", "vin", "axle", "registration", "gvw", "cert")
 AUTO_READ_PLACEHOLDER = "Enter Second(s)"
 AUTO_READ_COMMANDS = {
@@ -91,18 +93,18 @@ class TagFormFrame:
         self.form_container = tk.LabelFrame(
             parent_frame,
             text="Tag Data Fields",
-            padx=20,
-            pady=20,
+            padx=16,
+            pady=8,
             bg="#1f2937",
             fg="#f8fafc",
             font=("Segoe UI", 12, "bold"),
         )
-        self.form_container.pack(side="left", fill="y", padx=(0, 10), pady=(0, 8))
+        self.form_container.pack(side="left", fill="both", expand=False, padx=(0, 10), pady=(0, 8))
         self.form_container.configure(width=760)
         self.form_container.pack_propagate(False)
 
         self.form_grid = ttkb.Frame(self.form_container)
-        self.form_grid.pack(anchor="nw", padx=5, pady=5)
+        self.form_grid.pack(anchor="nw", padx=5, pady=(17, 5))
         self.form_grid.columnconfigure(0, minsize=170)
         self.form_grid.columnconfigure(1, minsize=72)
         self.form_grid.columnconfigure(2, minsize=82)
@@ -111,18 +113,81 @@ class TagFormFrame:
 
         self._build_fields()
         self._build_action_buttons()
+        self._build_response_section()
+
+    def _build_response_section(self):
+        self.response_frame = tk.LabelFrame(
+            self.form_container,
+            text="Response",
+            padx=12,
+            pady=10,
+            bg="#1f2937",
+            fg="#f8fafc",
+            font=("Segoe UI", 11, "bold"),
+        )
+        self.response_frame.pack(fill="x", padx=5, pady=(10, 5))
+
+        response_row = ttkb.Frame(self.response_frame)
+        response_row.pack(fill="x")
+
+        self.response_status_label = ttkb.Label(
+            response_row,
+            text="No response",
+            foreground="#9CA3AF",
+            style="Field.TLabel",
+        )
+        self.response_status_label.pack(side="left", padx=(0, 8))
+
+        self.response_value_label = ttkb.Label(
+            response_row,
+            text="Waiting for reader response.",
+            foreground="#E2E8F0",
+            style="Field.TLabel",
+            anchor="w",
+        )
+        self.response_value_label.pack(side="left", fill="x", expand=True)
+
+        self.copy_response_button = ttkb.Button(
+            response_row,
+            text="Copy",
+            command=self.copy_response,
+            bootstyle="secondary",
+            width=8,
+        )
+        self.copy_response_button.pack(side="right", padx=(8, 0))
+
+        self._response_text = ""
+
+    def show_response(self, response_text: str, success: bool = True):
+        self._response_text = response_text
+        self.response_status_label.configure(
+            text="success" if success else "Error",
+            foreground="#10B981" if success else "#EF4444",
+        )
+        self.response_value_label.configure(text=response_text or "No response data.")
+
+    def copy_response(self):
+        if not self._response_text:
+            return
+        self.root.clipboard_clear()
+        self.root.clipboard_append(self._response_text)
+        self.root.update()
 
     def _build_fields(self):
-        for row_index, (label_text, var_name) in enumerate(FIELD_ROWS):
+        visible_row_index = 0
+        for label_text, var_name in FIELD_ROWS:
+            if var_name in HIDDEN_FIELD_NAMES:
+                continue
+
             ttkb.Label(self.form_grid, text=label_text, style="Field.TLabel").grid(
-                row=row_index * 2, column=0, columnspan=5, sticky="w", pady=(0, 2)
+                row=visible_row_index * 2, column=0, columnspan=5, sticky="w", pady=(0, 2)
             )
 
             var = tk.StringVar()
             self.field_vars[var_name] = var
             entry_options = {
                 "textvariable": var,
-                "width": 27,
+                "width": 30,
                 "bootstyle": "info",
                 "state": "normal",
             }
@@ -174,7 +239,13 @@ class TagFormFrame:
             else:
                 entry = ttkb.Entry(self.form_grid, **entry_options)
 
-            entry.grid(row=row_index * 2 + 1, column=0, sticky="w", pady=(0, 8))
+            entry.grid(
+                row=visible_row_index * 2 + 1,
+                column=0,
+                sticky="w",
+                padx=(0, 14),
+                pady=(0, 8),
+            )
             self.entry_widgets[var_name] = entry
 
             if var_name in PLACEHOLDERS:
@@ -192,15 +263,15 @@ class TagFormFrame:
                 bootstyle="info",
                 width=7,
             ).grid(
-                row=row_index * 2 + 1,
+                row=visible_row_index * 2 + 1,
                 column=1,
                 sticky="w",
-                padx=(10, 5),
+                padx=(14, 12),
                 pady=(0, 8),
             )
 
             if var_name == "tag_id":
-                self._build_auto_read_interval_entry(var_name, row_index, column=2)
+                self._build_auto_read_interval_entry(var_name, visible_row_index, column=2)
             elif var_name in AUTO_READ_FIELDS:
                 ttkb.Button(
                     self.form_grid,
@@ -209,13 +280,13 @@ class TagFormFrame:
                     bootstyle="success",
                     width=7,
                 ).grid(
-                    row=row_index * 2 + 1,
+                    row=visible_row_index * 2 + 1,
                     column=2,
                     sticky="w",
                     padx=(23, 0),
                     pady=(0, 8),
                 )
-                self._build_auto_read_interval_entry(var_name, row_index, column=3)
+                self._build_auto_read_interval_entry(var_name, visible_row_index, column=3)
             else:
                 ttkb.Button(
                     self.form_grid,
@@ -224,12 +295,14 @@ class TagFormFrame:
                     bootstyle="success",
                     width=7,
                 ).grid(
-                    row=row_index * 2 + 1,
+                    row=visible_row_index * 2 + 1,
                     column=2,
                     sticky="w",
                     padx=(2, 0),
                     pady=(0, 8),
                 )
+
+            visible_row_index += 1
 
     def _build_auto_read_interval_entry(self, field_name: str, row_index: int, column: int):
         var = tk.StringVar(value=AUTO_READ_PLACEHOLDER)
@@ -246,7 +319,7 @@ class TagFormFrame:
             "%P",
         )
         entry = ttkb.Entry(self.form_grid, **entry_options)
-        entry.grid(row=row_index * 2 + 1, column=column, sticky="w", padx=(0, 0), pady=(0, 8))
+        entry.grid(row=row_index * 2 + 1, column=column, sticky="w", padx=(8, 0), pady=(0, 8))
         self.interval_widgets[field_name] = entry
         entry.configure(foreground=PLACEHOLDER_COLOR)
         entry.bind("<FocusIn>", lambda e, name=field_name: self._clear_auto_read_placeholder(e, name))
@@ -273,27 +346,8 @@ class TagFormFrame:
         self._stop_all_auto_reads()
 
     def _build_action_buttons(self):
-        button_frame = ttkb.Frame(self.form_container)
-        button_frame.pack(fill="x", pady=(5, 0))
-
-        button_center = ttkb.Frame(button_frame)
-        button_center.pack(anchor="center")
-
-        ttkb.Button(
-            button_center,
-            text="Read All",
-            command=self.read_all_fields,
-            bootstyle="info",
-            width=16,
-        ).pack(side="left", padx=(0, 12), pady=(30, 0))
-
-        ttkb.Button(
-            button_center,
-            text="Clear Form",
-            command=self.clear_fields,
-            bootstyle="warning",
-            width=16,
-        ).pack(side="left", pady=(30, 0))
+        # These global form actions are intentionally hidden per product requirement.
+        pass
 
     def _clear_placeholder(self, event, var_name: str):
         ph = PLACEHOLDERS.get(var_name, "")
@@ -316,6 +370,13 @@ class TagFormFrame:
     def set_field_value(self, field_name: str, value: str):
         if field_name in self.field_vars:
             self.field_vars[field_name].set(value)
+            widget = self.entry_widgets.get(field_name)
+            if widget:
+                widget.configure(foreground=NORMAL_COLOR)
+
+    def clear_field_value(self, field_name: str):
+        if field_name in self.field_vars:
+            self.field_vars[field_name].set("")
             widget = self.entry_widgets.get(field_name)
             if widget:
                 widget.configure(foreground=NORMAL_COLOR)
@@ -415,6 +476,14 @@ class TagFormFrame:
 
     def _on_auto_read_interval_enter(self, event, parameter: str):
         raw_value = self.interval_vars.get(parameter, tk.StringVar()).get().strip()
+        if raw_value in ("", AUTO_READ_PLACEHOLDER):
+            # An empty interval is optional: Enter performs one normal read.
+            self.read_field(parameter)
+            return
+        self._configure_auto_read_interval(parameter, send_immediately=False)
+
+    def _configure_auto_read_interval(self, parameter: str, send_immediately: bool):
+        raw_value = self.interval_vars.get(parameter, tk.StringVar()).get().strip()
         if raw_value == "":
             self.stop_auto_read(parameter)
             return
@@ -426,7 +495,14 @@ class TagFormFrame:
 
         interval_seconds = int(raw_value)
         self.auto_read_intervals[parameter] = interval_seconds
-        self.restart_auto_read(parameter)
+        self._stop_auto_read(parameter)
+        self.auto_read_active[parameter] = True
+        if send_immediately:
+            self._transmit_auto_read_command(parameter)
+        self.auto_read_jobs[parameter] = self.root.after(
+            interval_seconds * 1000,
+            lambda p=parameter: self._run_auto_read(p),
+        )
 
     def _validate_auto_read_interval(self, value: str) -> bool:
         if value == "":
@@ -440,6 +516,12 @@ class TagFormFrame:
         log_console = self.get_log_console()
 
         if field_name in READ_COMMANDS:
+            if field_name == "tag_id" and field_name in self.interval_vars:
+                raw_interval = self.interval_vars[field_name].get().strip()
+                if raw_interval not in ("", AUTO_READ_PLACEHOLDER):
+                    self._configure_auto_read_interval(field_name, send_immediately=True)
+                    return
+
             cmd_hex, conv_type, field_label, param_id = READ_COMMANDS[field_name]
             cmd_bytes = bytes.fromhex(cmd_hex)
             if self.reader.is_connected():

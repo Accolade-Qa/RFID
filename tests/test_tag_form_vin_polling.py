@@ -1,65 +1,33 @@
+import os
+import tempfile
 import unittest
 
-from ui.components.tag_form import TagFormFrame
+from config import LOG_DEFAULT_PATH
+from logger.log_console import LogConsole
 
 
-class DummyReader:
-    def __init__(self):
-        self.connected = True
-        self.writes = []
+class TestActivityLogging(unittest.TestCase):
+    def test_default_log_path_is_relative_to_app_directory_and_auto_save_is_enabled(self):
+        self.assertTrue(os.path.isabs(LOG_DEFAULT_PATH))
+        self.assertTrue(LOG_DEFAULT_PATH.lower().endswith("activity.log"))
 
-    def is_connected(self):
-        return self.connected
+        log_console = LogConsole()
+        self.assertTrue(log_console.auto_save)
+        self.assertEqual(log_console.file_path, LOG_DEFAULT_PATH)
 
-    def write_bytes(self, data):
-        self.writes.append(data)
-        return True
+    def test_appends_are_written_to_disk_when_auto_save_is_on(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            log_path = os.path.join(tmp_dir, "activity.log")
 
+            log_console = LogConsole()
+            log_console.set_file_path(log_path)
+            log_console.enable_auto_save(True)
+            log_console.append("user activity saved automatically")
 
-class DummyRoot:
-    def __init__(self):
-        self.scheduled = []
+            with open(log_path, "r", encoding="utf-8") as handle:
+                saved = handle.read()
 
-    def after(self, delay, callback):
-        self.scheduled.append((delay, callback))
-        return len(self.scheduled)
-
-    def after_cancel(self, job_id):
-        self.scheduled = [item for item in self.scheduled if item[0] != job_id]
-
-
-class TestTagFormVINPolling(unittest.TestCase):
-    def _build_form(self):
-        form = TagFormFrame.__new__(TagFormFrame)
-        form.reader = DummyReader()
-        form.get_log_console = lambda: []
-        form.root = DummyRoot()
-        form.pending_requests = {}
-        form.request_counter = 0
-        form.vin_polling_job = None
-        form.vin_polling_active = False
-        form._reader_disconnect_callback = None
-        form._register_pending_request = TagFormFrame._register_pending_request.__get__(form, TagFormFrame)
-        form._start_vin_polling = TagFormFrame._start_vin_polling.__get__(form, TagFormFrame)
-        form._stop_vin_polling = TagFormFrame._stop_vin_polling.__get__(form, TagFormFrame)
-        form._schedule_vin_poll = TagFormFrame._schedule_vin_poll.__get__(form, TagFormFrame)
-        form._send_vin_poll = TagFormFrame._send_vin_poll.__get__(form, TagFormFrame)
-        form._send_vin_read_command = TagFormFrame._send_vin_read_command.__get__(form, TagFormFrame)
-        return form
-
-    def test_start_vin_polling_sends_periodic_reads(self):
-        form = self._build_form()
-
-        form._start_vin_polling()
-
-        self.assertTrue(form.vin_polling_active)
-        self.assertEqual(form.reader.writes[0], bytes.fromhex("24110102C1B223"))
-        self.assertEqual(len(form.root.scheduled), 1)
-
-        form._send_vin_poll()
-
-        self.assertEqual(len(form.reader.writes), 2)
-        self.assertTrue(form.vin_polling_active)
+            self.assertIn("user activity saved automatically", saved)
 
 
 if __name__ == "__main__":

@@ -16,8 +16,10 @@ class RFIDApp:
     def __init__(self):
         self.base_dir = Path(__file__).resolve().parent.parent
 
-        self.root = ttkb.Window(themename="darkly")
-        self.root.geometry("1450x880")
+        self.root = ttkb.Window(themename="cyborg")
+        # self.root.title("Disable Maximize")
+        self.root.geometry("1300x750")
+        # self.root.resizable(False, False)
         self.root.minsize(1200, 750)
         self.root.title("RFID Tag Reader & Writer")
 
@@ -36,26 +38,15 @@ class RFIDApp:
         self.content_frame = ttkb.Frame(self.main_frame)
         self.content_frame.pack(fill="both", expand=True, padx=15, pady=(0, 15))
 
-        self.right_panel = ttkb.Frame(self.content_frame)
-        self.right_panel.pack(side="right", fill="both", expand=True)
-
-        self.top_row = ttkb.Frame(self.right_panel)
-        self.top_row.pack(fill="x", pady=(0, 12))
+        self.top_row = ttkb.Frame(self.content_frame)
+        self.top_row.pack(fill="x", expand=False, pady=(0, 12))
 
         # Log panel component
-        self.log_panel_comp = LogPanelFrame(self.right_panel, self.root)
-
-        # Comm panel component
-        self.comm_panel_comp = CommPanelFrame(
-            self.top_row,
-            self.reader,
-            lambda: self.log_panel_comp.log_console,
-            self._on_connection_change,
-        )
+        self.log_panel_comp = LogPanelFrame(self.content_frame, self.root)
 
         # Tag form component
         self.tag_form_comp = TagFormFrame(
-            self.content_frame,
+            self.top_row,
             self.root,
             self.reader,
             lambda: self.log_panel_comp.log_console,
@@ -63,11 +54,20 @@ class RFIDApp:
             timeout_cb=self._on_command_timeout,
         )
 
+        # Comm panel component
+        self.comm_panel_comp = CommPanelFrame(
+            self.top_row,
+            self.reader,
+            lambda: self.log_panel_comp.log_console,
+            self._on_connection_change,
+            diagnostic_parent=self.content_frame,
+        )
+
         self._bind_events()
         self.root.after(50, self.update_gui)
 
     def _configure_styles(self):
-        style = ttkb.Style(theme="darkly")
+        style = ttkb.Style(theme="cyborg")
         style.configure("Card.TFrame", background="#1f2937")
         style.configure("Header.TFrame", background="#111827")
         style.configure("Title.TLabel", font=("Segoe UI", 22, "bold"), foreground="#F8FAFC")
@@ -81,7 +81,15 @@ class RFIDApp:
         style.configure("TCombobox", padding=(6, 5))
 
     def _on_command_timeout(self, field_label: str):
-        self.comm_panel_comp.show_timeout(field_label)
+        if field_label == "Tag ID":
+            self.tag_form_comp.clear_field_value("tag_id")
+            self.comm_panel_comp.show_no_tag_found()
+        else:
+            self.comm_panel_comp.show_timeout(field_label)
+        self.tag_form_comp.show_response(
+            f"No reply from reader within 5 seconds for {field_label}.",
+            success=False,
+        )
 
     def _set_app_icon(self):
         icon_path = self.base_dir / "assets" / "Acc_logo.ico"
@@ -143,6 +151,7 @@ class RFIDApp:
         try:
             if len(frame) < 5:
                 self.comm_panel_comp.show_fail(description="Frame too short")
+                self.tag_form_comp.show_response("Frame too short", success=False)
                 return
 
             tag_byte = frame[3]  # Response Tag / Command ID Byte
@@ -154,6 +163,9 @@ class RFIDApp:
                 if failed_cmd in self.tag_form_comp.pending_requests:
                     self.tag_form_comp.pending_requests.pop(failed_cmd)
                     self.comm_panel_comp.show_fail(error_code=error_code)
+                    self.tag_form_comp.show_response(
+                        f"Error 0x{error_code:02X}", success=False
+                    )
                     write_log(f"UART RX Negative Response for Cmd 0x{failed_cmd:02X} (Error 0x{error_code:02X})", log_console)
                     log_console.append_json(
                         name=f"Cmd 0x{failed_cmd:02X}",
@@ -267,11 +279,22 @@ class RFIDApp:
                     cmd_sent = pending_info.get("Command Sent", "")
                     op_type = pending_info.get("Operation", "Read")
 
+                    if var_name == "tag_id" and data_bytes and not any(data_bytes):
+                        self.tag_form_comp.clear_field_value("tag_id")
+                        self.comm_panel_comp.show_no_tag_found()
+                        self.tag_form_comp.show_response(
+                            "No reply from reader for Tag ID.",
+                            success=False,
+                        )
+                        write_log("UART RX: No Tag Found", log_console)
+                        return
+
                     # 1. Update UI Entry Box immediately
                     self.tag_form_comp.set_field_value(var_name, decoded_val)
 
-                    # 2. Display PASS Card with positive response payload hex
-                    self.comm_panel_comp.show_pass(payload_hex_spaced)
+                    # 2. Keep both response displays identical to the decoded field value
+                    self.comm_panel_comp.show_pass(decoded_val)
+                    self.tag_form_comp.show_response(decoded_val)
 
                     # 3. Log clean text line in console window
                     write_log(f"UART RX ({field_label}): {decoded_val} [Payload: {payload_hex_spaced}]", log_console)
@@ -285,6 +308,15 @@ class RFIDApp:
                         conversion=conv_type,
                         medium=medium,
                     )
+                    if op_type == "Read":
+                        log_console.append_csv(
+                            name=field_label,
+                            operation=op_type,
+                            command_sent=cmd_sent,
+                            response_received=decoded_val,
+                            conversion=conv_type,
+                            medium=medium,
+                        )
                 # else:
                 #     # Late response arrived after 5-second timeout -> ignore and preserve NO RESPONSE status
                 #     write_log(
@@ -294,6 +326,7 @@ class RFIDApp:
 
         except Exception as e:
             self.comm_panel_comp.show_fail(description=str(e))
+            self.tag_form_comp.show_response(str(e), success=False)
             write_log(f"Error parsing response frame: {e}", log_console)
 
     def update_gui(self):

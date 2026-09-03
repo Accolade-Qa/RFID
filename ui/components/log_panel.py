@@ -22,8 +22,9 @@ class LogPanelFrame:
         )
         self.log_frame.pack(fill="both", expand=True, pady=(0, 8))
         self.log_frame.pack_propagate(False)
+        self.log_frame.pack_forget()
 
-        self.auto_save_var = tk.BooleanVar(value=False)
+        self.auto_save_var = tk.BooleanVar(value=True)
         self.log_path_var = tk.StringVar(value=LOG_DEFAULT_PATH)
 
         self._build_widgets()
@@ -70,6 +71,7 @@ class LogPanelFrame:
         self.log_console.pack(fill="both", expand=True)
 
         write_log("RFID Communicator started", self.log_console)
+        self.log_console.enable_auto_save(True)
 
     def browse_log_path(self):
         path = filedialog.asksaveasfilename(
