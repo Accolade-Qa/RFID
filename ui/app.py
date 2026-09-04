@@ -87,7 +87,7 @@ class RFIDApp:
         else:
             self.comm_panel_comp.show_timeout(field_label)
         self.tag_form_comp.show_response(
-            f"No reply from reader within 5 seconds for {field_label}.",
+            f"No reply from reader for {field_label}.",
             success=False,
         )
 
