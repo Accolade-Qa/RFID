@@ -5,7 +5,7 @@ import threading
 from datetime import datetime
 from tkinter import scrolledtext
 
-from config import CSV_DEFAULT_PATH, JSON_DEFAULT_PATH, LOG_DEFAULT_PATH
+from config import CSV_DEFAULT_PATH, JSON_DEFAULT_PATH, LOG_DEFAULT_PATH, get_daily_csv_path
 
 MAX_LOG_LINES = 1000
 JSON_LOG_FILE = JSON_DEFAULT_PATH
@@ -31,7 +31,7 @@ class LogConsole(scrolledtext.ScrolledText):
         self.max_lines = max_lines
         self.line_count = 0
         self.json_file_path = JSON_LOG_FILE
-        self.csv_file_path = CSV_DEFAULT_PATH
+        self.csv_file_path = None
         self._lock = threading.Lock()
 
     def append(self, message: str):
@@ -96,16 +96,27 @@ class LogConsole(scrolledtext.ScrolledText):
     def set_file_path(self, path: str):
         self.file_path = path
 
+    def get_csv_file_path(self) -> str:
+        """Returns the configured CSV path or dynamically resolves today's daily CSV path."""
+        if self.csv_file_path:
+            return self.csv_file_path
+        return get_daily_csv_path()
+
+    def set_csv_file_path(self, path: str | None):
+        self.csv_file_path = path
+
     def append_csv(self, name: str, operation: str, command_sent: str,
                    response_received: str = "", conversion: str = "",
                    medium: str = "UART") -> bool:
-        """Append one structured response record to the application CSV log."""
+        """Append one structured response record to the application daily CSV log."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        target_csv_path = self.get_csv_file_path()
         fieldnames = [
             "Name",
             "Operation",
             "Command Sent",
             "Response Received",
+            "Conversion",
             "Medium of transmission",
             "Date and Time",
         ]
@@ -114,31 +125,38 @@ class LogConsole(scrolledtext.ScrolledText):
             "Operation": operation,
             "Command Sent": command_sent,
             "Response Received": response_received,
+            "Conversion": conversion,
             "Medium of transmission": medium,
             "Date and Time": timestamp,
         }
 
         try:
             with self._lock:
+                target_dir = os.path.dirname(target_csv_path)
+                if target_dir and not os.path.exists(target_dir):
+                    os.makedirs(target_dir, exist_ok=True)
+
                 existing_rows = []
                 has_existing_header = False
                 rewrite_file = False
-                if os.path.exists(self.csv_file_path) and os.path.getsize(self.csv_file_path) > 0:
-                    with open(self.csv_file_path, "r", newline="", encoding="utf-8") as csv_file:
+                if os.path.exists(target_csv_path) and os.path.getsize(target_csv_path) > 0:
+                    with open(target_csv_path, "r", newline="", encoding="utf-8") as csv_file:
                         reader = csv.DictReader(csv_file)
                         has_existing_header = reader.fieldnames is not None
-                        existing_rows = [
-                            {field: row.get(field, "") for field in fieldnames}
-                            for row in reader
-                        ]
-                        rewrite_file = reader.fieldnames != fieldnames
+                        if has_existing_header:
+                            existing_rows = [
+                                {field: row.get(field, "") for field in fieldnames}
+                                for row in reader
+                            ]
+                            rewrite_file = reader.fieldnames != fieldnames
 
                 file_mode = "w" if rewrite_file else "a"
-                with open(self.csv_file_path, file_mode, newline="", encoding="utf-8") as csv_file:
+                with open(target_csv_path, file_mode, newline="", encoding="utf-8") as csv_file:
                     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
                     if rewrite_file or not has_existing_header:
                         writer.writeheader()
-                        writer.writerows(existing_rows)
+                        if rewrite_file:
+                            writer.writerows(existing_rows)
                     writer.writerow(record)
             return True
         except Exception:

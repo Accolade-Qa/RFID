@@ -151,6 +151,7 @@ class TagFormFrame:
             response_row,
             text="Copy",
             command=self.copy_response,
+            # pyrefly: ignore [unexpected-keyword]
             bootstyle="secondary",
             width=8,
         )
@@ -198,6 +199,7 @@ class TagFormFrame:
                     self.root.register(validate_tag_id_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "serial":
                 entry_options["validate"] = "key"
@@ -205,6 +207,7 @@ class TagFormFrame:
                     self.root.register(validate_serial_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "vin":
                 entry_options["validate"] = "key"
@@ -212,6 +215,7 @@ class TagFormFrame:
                     self.root.register(validate_vin_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "registration":
                 entry_options["validate"] = "key"
@@ -219,6 +223,7 @@ class TagFormFrame:
                     self.root.register(validate_registration_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "axle":
                 entry_options["validate"] = "key"
@@ -227,6 +232,7 @@ class TagFormFrame:
                     "%P",
                     5,
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "gvw":
                 entry_options["validate"] = "key"
@@ -235,8 +241,10 @@ class TagFormFrame:
                     "%P",
                     10,
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             else:
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
 
             entry.grid(
@@ -260,6 +268,7 @@ class TagFormFrame:
                 self.form_grid,
                 text="Read",
                 command=lambda name=var_name: self.read_field(name),
+                # pyrefly: ignore [unexpected-keyword]
                 bootstyle="info",
                 width=7,
             ).grid(
@@ -277,6 +286,7 @@ class TagFormFrame:
                     self.form_grid,
                     text="Write",
                     command=lambda name=var_name: self.write_field(name),
+                    # pyrefly: ignore [unexpected-keyword]
                     bootstyle="success",
                     width=7,
                 ).grid(
@@ -292,6 +302,7 @@ class TagFormFrame:
                     self.form_grid,
                     text="Write",
                     command=lambda name=var_name: self.write_field(name),
+                    # pyrefly: ignore [unexpected-keyword]
                     bootstyle="success",
                     width=7,
                 ).grid(
@@ -318,6 +329,7 @@ class TagFormFrame:
             self.root.register(self._validate_auto_read_interval_input),
             "%P",
         )
+        # pyrefly: ignore [unexpected-keyword]
         entry = ttkb.Entry(self.form_grid, **entry_options)
         entry.grid(row=row_index * 2 + 1, column=column, sticky="w", padx=(8, 0), pady=(0, 8))
         self.interval_widgets[field_name] = entry
@@ -344,6 +356,7 @@ class TagFormFrame:
 
     def _handle_reader_disconnect(self):
         self._stop_all_auto_reads()
+        write_log("Auto Read stopped because reader disconnected.", self.get_log_console())
 
     def _build_action_buttons(self):
         # These global form actions are intentionally hidden per product requirement.
@@ -454,6 +467,7 @@ class TagFormFrame:
         if interval_seconds is None:
             return
         self._stop_auto_read(parameter)
+        self.auto_read_intervals[parameter] = interval_seconds
         self.auto_read_active[parameter] = True
         self.auto_read_jobs[parameter] = self.root.after(interval_seconds * 1000, lambda p=parameter: self._run_auto_read(p))
 
@@ -465,26 +479,30 @@ class TagFormFrame:
 
     def _stop_auto_read(self, parameter: str):
         self.auto_read_active[parameter] = False
+        self.auto_read_intervals.pop(parameter, None)
         job = self.auto_read_jobs.pop(parameter, None)
         if job is not None:
-            self.root.after_cancel(job)
+            try:
+                self.root.after_cancel(job)
+            except Exception:
+                pass
 
     def _stop_all_auto_reads(self):
         for parameter in list(AUTO_READ_COMMANDS.keys()):
             self._stop_auto_read(parameter)
-        write_log("Auto Read stopped because reader disconnected.", self.get_log_console())
 
     def _on_auto_read_interval_enter(self, event, parameter: str):
         raw_value = self.interval_vars.get(parameter, tk.StringVar()).get().strip()
         if raw_value in ("", AUTO_READ_PLACEHOLDER):
-            # An empty interval is optional: Enter performs one normal read.
+            # An empty interval is optional: Enter performs one normal read and ensures interval is stopped.
+            self.stop_auto_read(parameter)
             self.read_field(parameter)
             return
         self._configure_auto_read_interval(parameter, send_immediately=False)
 
     def _configure_auto_read_interval(self, parameter: str, send_immediately: bool):
         raw_value = self.interval_vars.get(parameter, tk.StringVar()).get().strip()
-        if raw_value == "":
+        if raw_value in ("", AUTO_READ_PLACEHOLDER):
             self.stop_auto_read(parameter)
             return
 
@@ -494,8 +512,8 @@ class TagFormFrame:
             return
 
         interval_seconds = int(raw_value)
-        self.auto_read_intervals[parameter] = interval_seconds
         self._stop_auto_read(parameter)
+        self.auto_read_intervals[parameter] = interval_seconds
         self.auto_read_active[parameter] = True
         if send_immediately:
             self._transmit_auto_read_command(parameter)
@@ -516,11 +534,13 @@ class TagFormFrame:
         log_console = self.get_log_console()
 
         if field_name in READ_COMMANDS:
-            if field_name == "tag_id" and field_name in self.interval_vars:
+            if field_name in self.interval_vars:
                 raw_interval = self.interval_vars[field_name].get().strip()
                 if raw_interval not in ("", AUTO_READ_PLACEHOLDER):
                     self._configure_auto_read_interval(field_name, send_immediately=True)
                     return
+                else:
+                    self.stop_auto_read(field_name)
 
             cmd_hex, conv_type, field_label, param_id = READ_COMMANDS[field_name]
             cmd_bytes = bytes.fromhex(cmd_hex)
