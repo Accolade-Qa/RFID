@@ -8357,5 +8357,1997 @@
     "Response Received": "24EF0E40E2004700D1B0602169AB010EC44F0423",
     "Medium of transmission": "UART",
     "Time Stamp": "2026-09-08 11:21:51.392"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:31:58.924"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:32:00.526"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:32:01.139"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCAA1A623",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:33:50.917"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCBB18723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:33:51.136"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FC991C523",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:33:52.508"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCBB18723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:33:54.488"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FC4406823",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:33:56.520"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCCC16023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:33:58.890"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FC5504923",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:33:59.588"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FC7700B23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:33:59.973"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCBB18723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:00.955"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FC6602A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:02.087"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCBB18723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:07.648"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:40.696"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CA378423",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:42.443"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D194DE23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:43.639"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:45.365"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:46.845"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108C907E723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:47.576"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108C817C623",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:49.798"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FC6602A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:51.343"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:56.341"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:34:58.543"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CB27A523",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:04.326"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:06.454"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108C3A6AD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:08.379"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108C4D64A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:11.116"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:12.109"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:14.725"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCDD14123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:16.949"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCBB18723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:18.263"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CB27A523",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:20.469"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:22.389"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCEE12223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:24.468"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:26.374"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D194DE23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:28.693"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:30.618"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:32.673"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:34.594"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CA378423",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:36.562"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:39.521"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CA378423",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:40.695"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:42.715"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CDDF6023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:44.926"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113D01CFC23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:49.150"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CBBFA623",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:53.105"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CFFF2223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:54.994"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113D01CFC23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:56.962"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CEEF0323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:35:59.199"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CBBFA623",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:01.639"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:03.030"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CA378423",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:05.094"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:07.349"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CAAF8723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:09.241"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CD476323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:11.335"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:13.332"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:18.135"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:19.513"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:21.453"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:23.552"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:25.752"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:27.721"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:29.542"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:32.333"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:34.496"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:38.320"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CD476323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:43.881"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:47.863"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CEEF0323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:50.712"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:51.837"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:53.827"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:36:55.908"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D3B49C23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:00.929"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:01.925"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:04.099"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:06.269"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CDDF6023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:10.672"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:14.463"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CCCF4123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:16.265"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113C88FC523",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:18.180"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:20.714"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D3B49C23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:24.647"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:26.741"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D3B49C23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:28.752"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CD476323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:30.711"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:32.469"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D4C47B23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:34.724"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113C88FC523",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:36.660"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:38.836"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:42.761"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:45.164"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CB27A523",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:46.836"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:51.013"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:53.058"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CD476323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:55.028"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FC881E423",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:56.883"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D194DE23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:37:59.406"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D5D45A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:01.609"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FC881E423",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:02.929"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D194DE23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:05.061"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CD476323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:06.933"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D3B49C23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:09.079"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:11.367"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:13.443"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:15.118"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:17.833"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:20.204"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D5D45A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:21.307"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CD476323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:23.373"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCCC16023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:27.530"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D3B49C23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:30.219"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CD476323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:31.896"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:34.490"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:35.823"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:37.956"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D4C47B23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:39.724"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CD476323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:41.743"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:45.719"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D194DE23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:47.838"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:49.955"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:52.191"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D194DE23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:54.331"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:56.304"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:38:58.214"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:03.040"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:04.291"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:06.618"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:08.871"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:10.613"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:12.250"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FD322BE23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:14.881"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCFF10323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:16.657"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCEE12223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:20.906"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCCC16023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:22.764"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FD102FC23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:24.835"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FD102FC23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:26.954"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCEE12223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:28.634"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FD012DD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:31.027"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCFF10323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:32.742"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FD012DD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:35.686"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FD4525923",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:39.531"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCFF10323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:41.065"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCEE12223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:43.075"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CAAF8723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:48.045"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113D23CBE23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:49.700"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113D01CFC23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:51.099"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CFFF2223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:53.205"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CFFF2223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:55.197"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CEEF0323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:58.253"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113D45C7823",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:39:59.659"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113D01CFC23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:01.600"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113D10CDD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:04.224"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113D23CBE23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:05.896"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113D32C9F23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:07.823"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113D54C5923",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:09.620"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113D32C9F23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:14.646"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CFFF2223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:15.745"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:18.744"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:20.088"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D4C47B23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:22.865"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:24.273"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CFFF2223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:26.041"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CD476323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:28.010"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CDDF6023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:30.117"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:32.080"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D4C47B23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:34.580"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CFFF2223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:37.089"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CD476323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:38.760"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CDDF6023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:40.249"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D3B49C23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:42.689"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:44.541"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:46.640"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CDDF6023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:48.385"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:50.547"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D5D45A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:53.092"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCBB18723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:54.711"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D4C47B23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:56.507"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CD476323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:40:59.014"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:00.936"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:02.843"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:04.665"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:07.073"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:08.727"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FD012DD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:11.186"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:13.505"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:15.854"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCCC16023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:17.066"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D5D45A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:19.272"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D3B49C23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:21.290"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCAA1A623",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:23.121"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D6E43923",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:25.349"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D3B49C23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:27.232"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:29.411"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:31.999"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCBB18723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:33.660"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D6E43923",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:35.735"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:37.481"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D5D45A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:42.166"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:44.019"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D5D45A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:48.217"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:49.732"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FCBB18723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:52.731"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D6E43923",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:54.317"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:56.359"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CDDF6023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:41:58.346"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D3B49C23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:00.599"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:04.276"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:06.077"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D2A4BD23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:09.105"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D3B49C23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:10.493"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:13.099"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CDDF6023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:14.967"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CDDF6023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:16.459"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:19.305"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D5D45A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:20.813"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:24.500"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FC7700B23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:26.811"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:31.507"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CCCF4123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:32.818"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D7F41823",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:34.920"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:36.775"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:38.906"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:41.153"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:42.957"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:45.057"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:47.081"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CCCF4123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:49.013"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CCCF4123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:51.029"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D805F723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:53.620"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D6E43923",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:57.649"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D5D45A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:42:59.493"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D084FF23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:02.271"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CDDF6023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:03.376"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:05.683"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CCCF4123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:07.543"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:09.390"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:11.523"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D805F723",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:13.487"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E20047165A206023507D010FC881E423",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:15.633"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113CCCF4123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:18.022"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CC574223",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:21.885"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CD476323",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:24.066"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CF672123",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:26.336"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D5D45A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:28.057"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108CE770023",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:30.373"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D4C47B23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:32.098"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E200470CB5B0602127EB0108D5D45A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:34.574"
+  },
+  {
+    "Name": "Tag ID",
+    "Operation": "Read",
+    "Command Sent": "24110100E1F023",
+    "Response Received": "24EF0E40E2004704CB506021A9450113C77E2A23",
+    "Medium of transmission": "UART",
+    "Time Stamp": "2026-09-09 15:43:35.763"
   }
 ]

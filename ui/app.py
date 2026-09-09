@@ -209,8 +209,21 @@ class RFIDApp:
     #         )
 
     #         return
-            # Positive Response Payload extraction (frame[4:-3] if CRC present, else frame[4:-1])
-            data_bytes = frame[4:-3] if len(frame) >= 7 else frame[4:-1]
+            # Positive Response Payload extraction (using length byte if available)
+            length_byte = frame[2] if len(frame) > 2 else 0
+            if length_byte > 0:
+                if length_byte == len(frame) - 4:
+                    payload_len = max(0, length_byte - 3)
+                elif length_byte == len(frame) - 6:
+                    payload_len = max(0, length_byte - 1)
+                elif length_byte <= (len(frame) - 5):
+                    payload_len = length_byte
+                else:
+                    payload_len = max(0, len(frame) - 7) if len(frame) >= 7 else max(0, len(frame) - 5)
+                data_bytes = frame[4 : 4 + payload_len]
+            else:
+                data_bytes = frame[4:-3] if len(frame) >= 7 else frame[4:-1]
+
             payload_hex_spaced = data_bytes.hex(" ").upper()
 
             var_name = ""
@@ -362,18 +375,50 @@ class RFIDApp:
                 if start_bin > 0:
                     del self.rx_buffer[:start_bin]
 
-                try:
-                    end_bin = self.rx_buffer.index(0x23, 1)  # '#'
-                except ValueError:
-                    if len(self.rx_buffer) > 512:
-                        del self.rx_buffer[0]
+                if len(self.rx_buffer) < 5:
                     break
 
-                frame = bytes(self.rx_buffer[: end_bin + 1])
-                del self.rx_buffer[: end_bin + 1]
+                length_byte = self.rx_buffer[2]
+                frame_found = False
 
-                if frame.startswith(b"\x24\xEF"):
-                    self._parse_uart_response(frame)
+                # Candidate expected lengths based on length_byte:
+                candidate_lengths = [
+                    length_byte + 4,
+                    length_byte + 6,
+                    length_byte + 5,
+                    length_byte + 7,
+                ]
+
+                for exp_len in candidate_lengths:
+                    if exp_len >= 5 and len(self.rx_buffer) >= exp_len:
+                        if self.rx_buffer[exp_len - 1] == 0x23:
+                            frame = bytes(self.rx_buffer[:exp_len])
+                            del self.rx_buffer[:exp_len]
+                            if frame.startswith(b"\x24\xEF"):
+                                self._parse_uart_response(frame)
+                            frame_found = True
+                            break
+
+                if frame_found:
+                    continue
+
+                # If minimum candidate length has not arrived yet, wait for remaining bytes
+                min_exp = min(candidate_lengths) if candidate_lengths else 5
+                if len(self.rx_buffer) < min_exp:
+                    break
+
+                # If buffer has accumulated past max expected length and no trailer matched at expected positions:
+                max_exp = max(candidate_lengths) if candidate_lengths else 50
+                if len(self.rx_buffer) > max_exp:
+                    try:
+                        next_start = self.rx_buffer.index(0x24, 1)
+                        del self.rx_buffer[:next_start]
+                        continue
+                    except ValueError:
+                        del self.rx_buffer[0]
+                        break
+                else:
+                    break
 
             # Handle ASCII Frame
             elif start_asc != -1:
