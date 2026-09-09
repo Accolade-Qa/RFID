@@ -66,6 +66,8 @@ class TagFormFrame:
         self.entry_widgets = {}
         self.pending_requests = {}  # Maps param_id -> dict of command metadata
         self.request_counter = 0
+        self._read_all_active = False
+        self._read_all_job = None
 
         self.form_container = tk.LabelFrame(
             parent_frame,
@@ -107,6 +109,7 @@ class TagFormFrame:
                     self.root.register(validate_tag_id_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "serial":
                 entry_options["validate"] = "key"
@@ -114,6 +117,7 @@ class TagFormFrame:
                     self.root.register(validate_serial_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "vin":
                 entry_options["validate"] = "key"
@@ -121,6 +125,7 @@ class TagFormFrame:
                     self.root.register(validate_vin_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "registration":
                 entry_options["validate"] = "key"
@@ -128,6 +133,7 @@ class TagFormFrame:
                     self.root.register(validate_registration_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "axle":
                 entry_options["validate"] = "key"
@@ -136,6 +142,7 @@ class TagFormFrame:
                     "%P",
                     5,
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "gvw":
                 entry_options["validate"] = "key"
@@ -143,8 +150,10 @@ class TagFormFrame:
                     self.root.register(validate_gvw_decimal_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             else:
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
 
             entry.grid(row=row_index * 2 + 1, column=0, sticky="w", pady=(0, 8))
@@ -162,6 +171,7 @@ class TagFormFrame:
                 self.form_grid,
                 text="Read",
                 command=lambda name=var_name: self.read_field(name),
+                # pyrefly: ignore [unexpected-keyword]
                 bootstyle="info",
                 width=7,
             ).grid(
@@ -178,6 +188,7 @@ class TagFormFrame:
                     self.form_grid,
                     text="Write",
                     command=lambda name=var_name: self.write_field(name),
+                    # pyrefly: ignore [unexpected-keyword]
                     bootstyle="success",
                     width=7,
                 ).grid(
@@ -199,6 +210,7 @@ class TagFormFrame:
             button_center,
             text="Read All",
             command=self.read_all_fields,
+            # pyrefly: ignore [unexpected-keyword]
             bootstyle="info",
             width=16,
         ).pack(side="left", padx=(0, 12))
@@ -207,6 +219,7 @@ class TagFormFrame:
             button_center,
             text="Clear Form",
             command=self.clear_fields,
+            # pyrefly: ignore [unexpected-keyword]
             bootstyle="warning",
             width=16,
         ).pack(side="left")
@@ -236,7 +249,17 @@ class TagFormFrame:
             if widget:
                 widget.configure(foreground=NORMAL_COLOR)
 
-    def _register_pending_request(self, param_id: int, field_label: str, operation: str, cmd_hex: str, conv_type: str, field_name: str):
+    def _register_pending_request(
+        self,
+        param_id: int,
+        field_label: str,
+        operation: str,
+        cmd_hex: str,
+        conv_type: str,
+        field_name: str,
+        on_success=None,
+        on_failure=None,
+    ):
         self.request_counter += 1
         req_id = self.request_counter
         self.pending_requests[param_id] = {
@@ -246,6 +269,8 @@ class TagFormFrame:
             "Command Sent": cmd_hex,
             "Conversion": conv_type,
             "var_name": field_name,
+            "on_success": on_success,
+            "on_failure": on_failure,
         }
         # Schedule 5-second (5000ms) timeout
         self.root.after(5000, lambda p_id=param_id, r_id=req_id, name=field_label, op=operation: self._handle_request_timeout(p_id, r_id, name, op))
@@ -274,6 +299,12 @@ class TagFormFrame:
             if callable(self.timeout_cb):
                 self.timeout_cb(field_label)
 
+            if callable(req_info.get("on_failure")):
+                try:
+                    req_info["on_failure"]("TIMEOUT")
+                except Exception:
+                    pass
+
     def read_field(self, field_name: str):
         log_console = self.get_log_console()
         medium_name = self._get_medium_name()
@@ -298,7 +329,7 @@ class TagFormFrame:
                 messagebox.showwarning("Read Field", "This field is empty.")
 
     def read_all_fields(self):
-        """Sequentially transmit Read commands for all fields spaced 600ms apart."""
+        """Sequentially transmit Read commands for all fields with automatic retry (up to 2 retries per field)."""
         log_console = self.get_log_console()
         medium_name = self._get_medium_name()
 
@@ -308,25 +339,60 @@ class TagFormFrame:
             return
 
         self.clear_pending_requests()
-        write_log("Starting Read All fields sequence...", log_console)
+        write_log("Starting Read All fields sequence with auto-retry (max 2 retries per field)...", log_console)
         commands = list(READ_COMMANDS.items())
-        interval_ms = 1000
+        self._read_all_active = True
+        max_retries = 2
+        delay_between_fields_ms = 1000
+        retry_delay_ms = 500
 
-        def _send_next(index=0):
+        def _execute_field(index: int = 0, retry_count: int = 0):
+            if not self._read_all_active or not self.reader.is_connected():
+                self._read_all_active = False
+                return
+
             if index >= len(commands):
-                write_log("Read All sequence completed dispatching.", log_console)
+                self._read_all_active = False
+                write_log("Read All sequence completed successfully.", log_console)
                 return
 
             field_name, (cmd_hex, conv_type, field_label, param_id) = commands[index]
-            if self.reader.is_connected():
-                cmd_bytes = bytes.fromhex(cmd_hex)
-                self._register_pending_request(param_id, field_label, "Read", cmd_hex, conv_type, field_name)
-                self.reader.write_bytes(cmd_bytes)
+            cmd_bytes = bytes.fromhex(cmd_hex)
+
+            def _on_success(decoded_val):
+                if not self._read_all_active:
+                    return
+                # Field succeeded -> move to next field
+                self._read_all_job = self.root.after(delay_between_fields_ms, lambda: _execute_field(index + 1, 0))
+
+            def _on_failure(err):
+                if not self._read_all_active:
+                    return
+                if retry_count < max_retries:
+                    next_retry = retry_count + 1
+                    write_log(f"{medium_name} Read All: Retrying {field_label} (Attempt {next_retry + 1}/{max_retries + 1})...", log_console)
+                    self._read_all_job = self.root.after(retry_delay_ms, lambda: _execute_field(index, next_retry))
+                else:
+                    write_log(f"{medium_name} Read All: {field_label} failed after {max_retries} retries, proceeding to next field...", log_console)
+                    self._read_all_job = self.root.after(delay_between_fields_ms, lambda: _execute_field(index + 1, 0))
+
+            self._register_pending_request(
+                param_id=param_id,
+                field_label=field_label,
+                operation="Read",
+                cmd_hex=cmd_hex,
+                conv_type=conv_type,
+                field_name=field_name,
+                on_success=_on_success,
+                on_failure=_on_failure,
+            )
+            self.reader.write_bytes(cmd_bytes)
+            if retry_count == 0:
                 write_log(f"{medium_name} TX Read Command ({field_label}): {cmd_hex}", log_console)
+            else:
+                write_log(f"{medium_name} TX Read Command Retry {retry_count}/{max_retries} ({field_label}): {cmd_hex}", log_console)
 
-            self.root.after(interval_ms, lambda: _send_next(index + 1))
-
-        _send_next(0)
+        _execute_field(0, 0)
 
     def write_field(self, field_name: str):
         log_console = self.get_log_console()
@@ -356,6 +422,13 @@ class TagFormFrame:
 
     def clear_pending_requests(self):
         """Immediately clear pending request tracking (e.g. on disconnect or medium change)."""
+        self._read_all_active = False
+        if hasattr(self, "_read_all_job") and self._read_all_job is not None:
+            try:
+                self.root.after_cancel(self._read_all_job)
+            except Exception:
+                pass
+            self._read_all_job = None
         self.pending_requests.clear()
 
     def clear_fields(self):
