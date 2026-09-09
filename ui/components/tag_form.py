@@ -107,6 +107,7 @@ class TagFormFrame:
                     self.root.register(validate_tag_id_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "serial":
                 entry_options["validate"] = "key"
@@ -114,6 +115,7 @@ class TagFormFrame:
                     self.root.register(validate_serial_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "vin":
                 entry_options["validate"] = "key"
@@ -121,6 +123,7 @@ class TagFormFrame:
                     self.root.register(validate_vin_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "registration":
                 entry_options["validate"] = "key"
@@ -128,6 +131,7 @@ class TagFormFrame:
                     self.root.register(validate_registration_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "axle":
                 entry_options["validate"] = "key"
@@ -136,6 +140,7 @@ class TagFormFrame:
                     "%P",
                     5,
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             elif var_name == "gvw":
                 entry_options["validate"] = "key"
@@ -143,8 +148,10 @@ class TagFormFrame:
                     self.root.register(validate_gvw_decimal_entry),
                     "%P",
                 )
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
             else:
+                # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
 
             entry.grid(row=row_index * 2 + 1, column=0, sticky="w", pady=(0, 8))
@@ -162,6 +169,7 @@ class TagFormFrame:
                 self.form_grid,
                 text="Read",
                 command=lambda name=var_name: self.read_field(name),
+                # pyrefly: ignore [unexpected-keyword]
                 bootstyle="info",
                 width=7,
             ).grid(
@@ -178,6 +186,7 @@ class TagFormFrame:
                     self.form_grid,
                     text="Write",
                     command=lambda name=var_name: self.write_field(name),
+                    # pyrefly: ignore [unexpected-keyword]
                     bootstyle="success",
                     width=7,
                 ).grid(
@@ -199,6 +208,7 @@ class TagFormFrame:
             button_center,
             text="Read All",
             command=self.read_all_fields,
+            # pyrefly: ignore [unexpected-keyword]
             bootstyle="info",
             width=16,
         ).pack(side="left", padx=(0, 12))
@@ -207,6 +217,7 @@ class TagFormFrame:
             button_center,
             text="Clear Form",
             command=self.clear_fields,
+            # pyrefly: ignore [unexpected-keyword]
             bootstyle="warning",
             width=16,
         ).pack(side="left")
