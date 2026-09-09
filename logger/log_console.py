@@ -116,7 +116,6 @@ class LogConsole(scrolledtext.ScrolledText):
             "Operation",
             "Command Sent",
             "Response Received",
-            "Conversion",
             "Medium of transmission",
             "Date and Time",
         ]
@@ -125,7 +124,6 @@ class LogConsole(scrolledtext.ScrolledText):
             "Operation": operation,
             "Command Sent": command_sent,
             "Response Received": response_received,
-            "Conversion": conversion,
             "Medium of transmission": medium,
             "Date and Time": timestamp,
         }

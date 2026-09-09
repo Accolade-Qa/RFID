@@ -240,6 +240,7 @@ class RFIDApp:
                 decoded_val = data_bytes.hex().upper()
                 if len(decoded_val) > 24:
                     decoded_val = decoded_val[:24]
+                payload_hex_spaced = decoded_val
 
             elif tag_byte == 0x41:  # Serial Reader Number (0x01) -> Alphanumeric
                 param_id = 0x01
@@ -313,11 +314,12 @@ class RFIDApp:
                     write_log(f"UART RX ({field_label}): {decoded_val} [Payload: {payload_hex_spaced}]", log_console)
 
                     # 4. Save SINGLE completed JSON entry with BOTH Command Sent and Response Received
+                    json_response = decoded_val if var_name == "tag_id" else frame_hex
                     log_console.append_json(
                         name=field_label,
                         operation=op_type,
                         command_sent=cmd_sent,
-                        response_received=frame_hex,
+                        response_received=json_response,
                         conversion=conv_type,
                         medium=medium,
                     )

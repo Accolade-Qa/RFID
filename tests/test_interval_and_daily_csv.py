@@ -43,7 +43,7 @@ class TestDailyCsvLogging(unittest.TestCase):
                 self.assertEqual(rows[0]["Operation"], "Read")
                 self.assertEqual(rows[0]["Command Sent"], "24110100E1F023")
                 self.assertEqual(rows[0]["Response Received"], "E2004704CB506021A9450113")
-                self.assertEqual(rows[0]["Conversion"], "hex as it is")
+                self.assertNotIn("Conversion", rows[0])
                 self.assertEqual(rows[0]["Medium of transmission"], "UART")
                 self.assertTrue(rows[0]["Date and Time"] != "")
 
