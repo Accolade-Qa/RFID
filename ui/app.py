@@ -348,39 +348,108 @@ class RFIDApp:
         if len(self.rx_buffer) > 8192:
             del self.rx_buffer[:-2048]
 
-        # Parse framed UART packets ending with '#' (0x23)
-        while True:
-            try:
-                end_idx = self.rx_buffer.index(0x23)  # Find frame trailer '#'
-            except ValueError:
-                break
-
-            raw_chunk = bytes(self.rx_buffer[: end_idx + 1])
-            del self.rx_buffer[: end_idx + 1]
-
-            if not raw_chunk:
-                continue
-
+        # Parse framed UART packets based on expected frame length
+        while self.rx_buffer:
             # Case A: Frame contains '$' (0x24) -> Full Binary Frame (e.g. 24 EF ...)
-            if 0x24 in raw_chunk:
-                start_idx = raw_chunk.index(0x24)
-                frame = raw_chunk[start_idx:]
-                if len(frame) >= 5:
-                    self._parse_uart_response(frame)
+            if 0x24 in self.rx_buffer:
+                start_idx = self.rx_buffer.index(0x24)
 
-            # Case B: ASCII hex text string frame (e.g. b"24EF...23" or b"0469...23")
-            elif b"24" in raw_chunk or b"EF" in raw_chunk:
+                # Check for ASCII frame starting before 0x24 if present
+                start_asc = self.rx_buffer.find(b"24EF")
+                if start_asc != -1 and start_asc < start_idx:
+                    if start_asc > 0:
+                        del self.rx_buffer[:start_asc]
+                    if len(self.rx_buffer) < 6:
+                        break
+                    try:
+                        len_val = int(self.rx_buffer[4:6], 16)
+                        expected_ascii_len = (len_val + 4) * 2
+                    except ValueError:
+                        del self.rx_buffer[0]
+                        continue
+                    if len(self.rx_buffer) < expected_ascii_len:
+                        break
+                    if self.rx_buffer[expected_ascii_len - 2 : expected_ascii_len] == b"23":
+                        ascii_str = self.rx_buffer[:expected_ascii_len].decode("ascii", errors="ignore").replace(" ", "").strip()
+                        del self.rx_buffer[:expected_ascii_len]
+                        try:
+                            raw_binary_frame = bytes.fromhex(ascii_str)
+                            if len(raw_binary_frame) >= 5:
+                                self._parse_uart_response(raw_binary_frame)
+                        except Exception:
+                            pass
+                        continue
+                    else:
+                        del self.rx_buffer[0]
+                        continue
+
+                # Discard leading junk before 0x24
+                if start_idx > 0:
+                    del self.rx_buffer[:start_idx]
+
+                # Need at least 3 bytes [0x24, ECU_ID, LEN] to determine expected_len
+                if len(self.rx_buffer) < 3:
+                    break
+
+                expected_len = self.rx_buffer[2] + 4
+                if expected_len < 5:
+                    # Invalid length byte -> false start byte
+                    del self.rx_buffer[0]
+                    continue
+
+                if len(self.rx_buffer) < expected_len:
+                    # Wait for remainder of the frame to arrive
+                    break
+
+                # Strictly check trailer at buffer[expected_len - 1] == 0x23, ignoring internal 0x23 bytes
+                if self.rx_buffer[expected_len - 1] == 0x23:
+                    frame = bytes(self.rx_buffer[:expected_len])
+                    del self.rx_buffer[:expected_len]
+                    self._parse_uart_response(frame)
+                else:
+                    # False start byte or corrupted frame, advance by 1
+                    del self.rx_buffer[0]
+
+            # Case B: ASCII hex text string frame (e.g. b"24EF...23") without binary 0x24
+            elif b"24EF" in self.rx_buffer or b"24" in self.rx_buffer:
+                start_asc = self.rx_buffer.find(b"24EF")
+                if start_asc == -1:
+                    start_asc = self.rx_buffer.find(b"24")
+                if start_asc > 0:
+                    del self.rx_buffer[:start_asc]
+                if len(self.rx_buffer) < 6:
+                    break
                 try:
-                    ascii_str = raw_chunk.decode("ascii", errors="ignore").replace(" ", "").strip()
-                    raw_binary_frame = bytes.fromhex(ascii_str)
-                    if len(raw_binary_frame) >= 5:
-                        self._parse_uart_response(raw_binary_frame)
-                except Exception:
-                    pass
+                    len_val = int(self.rx_buffer[4:6], 16)
+                    expected_ascii_len = (len_val + 4) * 2
+                except ValueError:
+                    del self.rx_buffer[0]
+                    continue
+                if len(self.rx_buffer) < expected_ascii_len:
+                    break
+                if self.rx_buffer[expected_ascii_len - 2 : expected_ascii_len] == b"23":
+                    ascii_str = self.rx_buffer[:expected_ascii_len].decode("ascii", errors="ignore").replace(" ", "").strip()
+                    del self.rx_buffer[:expected_ascii_len]
+                    try:
+                        raw_binary_frame = bytes.fromhex(ascii_str)
+                        if len(raw_binary_frame) >= 5:
+                            self._parse_uart_response(raw_binary_frame)
+                    except Exception:
+                        pass
+                else:
+                    del self.rx_buffer[0]
 
             # Case C: Direct Compact Binary Frame without '$' (e.g. 04 69 03 00 14 25 80 23)
-            elif len(raw_chunk) >= 5:
-                self._parse_uart_response(raw_chunk)
+            elif len(self.rx_buffer) >= 5:
+                expected_len = self.rx_buffer[0] + 4
+                if 5 <= expected_len <= len(self.rx_buffer) and self.rx_buffer[expected_len - 1] == 0x23:
+                    frame = bytes(self.rx_buffer[:expected_len])
+                    del self.rx_buffer[:expected_len]
+                    self._parse_uart_response(frame)
+                else:
+                    del self.rx_buffer[0]
+            else:
+                break
 
         self.root.after(50, self.update_gui)
 

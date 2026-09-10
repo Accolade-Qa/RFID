@@ -212,8 +212,17 @@ class CANReader(BaseCommunicator):
 
         self._last_rx_time = now
         self._rx_reassembly_buffer.extend(data)
-
-        if b"\x23" in self._rx_reassembly_buffer:
+        # Check if complete frame received based on expected length and trailer byte 0x23
+        if 0x24 in self._rx_reassembly_buffer:
+            start_idx = self._rx_reassembly_buffer.index(0x24)
+            if start_idx > 0:
+                del self._rx_reassembly_buffer[:start_idx]
+            if len(self._rx_reassembly_buffer) >= 3:
+                expected_len = self._rx_reassembly_buffer[2] + 4
+                if len(self._rx_reassembly_buffer) >= expected_len:
+                    if self._rx_reassembly_buffer[expected_len - 1] == 0x23:
+                        self._flush_reassembly_buffer()
+        elif len(self._rx_reassembly_buffer) >= 5 and self._rx_reassembly_buffer[-1] == 0x23:
             self._flush_reassembly_buffer()
 
     def _flush_reassembly_buffer(self):
@@ -238,14 +247,16 @@ class CANReader(BaseCommunicator):
                 if not item:
                     continue
 
-                data, target_tx_id, is_ext = item
+                data, tx_id, is_ext = item
 
-                if self.bus:
+                # If physical CAN bus is open, transmit CAN messages
+                if self.bus and not self.is_virtual:
                     try:
-                        for chunk_idx in range(0, len(data), 8):
-                            chunk = data[chunk_idx : chunk_idx + 8]
+                        # Split data into 8-byte CAN frames
+                        for i in range(0, len(data), 8):
+                            chunk = data[i : i + 8]
                             msg = can.Message(
-                                arbitration_id=target_tx_id,
+                                arbitration_id=tx_id,
                                 data=chunk,
                                 is_extended_id=is_ext,
                             )
@@ -286,7 +297,7 @@ class CANReader(BaseCommunicator):
         # 1. READ Commands
         if cmd_type == 0x01:
             if param_id == 0x00:  # Tag ID
-                resp = b"\x24\xEF\x12\x40\x45\x32\x38\x30\x36\x38\x32\x30\x30\x30\x30\x30\x30\x30\x30\x23"
+                resp = b"\x24\xEF\x12\x40\x45\x32\x38\x30\x36\x38\x32\x30\x30\x30\x30\x30\x30\x30\x30\x8E\x7F\x23"
             elif param_id == 0x01:  # Serial
                 resp = b"\x24\xEF\x17\x41\x53\x45\x52\x49\x41\x4C\x31\x32\x33\x34\x56\x4C\x54\x44\x30\x31\x8E\x7F\x23"
             elif param_id == 0x02:  # VIN
