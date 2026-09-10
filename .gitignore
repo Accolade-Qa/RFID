@@ -8,3 +8,5 @@ Ui.py/
 rfid/
 security/
 activity_records.json
+dist/
+build/
