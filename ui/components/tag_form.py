@@ -67,6 +67,14 @@ class TagFormFrame:
         self.pending_requests = {}  # Maps param_id -> dict of command metadata
         self.request_counter = 0
 
+        # Read All sequence state & retry tracking
+        self.read_all_active = False
+        self.read_all_commands = []
+        self.read_all_index = 0
+        self.read_all_retries = 0
+        self.read_all_timer_id = None
+        self.single_read_retries = {}
+
         self.form_container = tk.LabelFrame(
             parent_frame,
             text="Tag Data Fields",
@@ -286,6 +294,11 @@ class TagFormFrame:
                 self.timeout_cb(field_label)
 
     def read_field(self, field_name: str):
+        if field_name == "tag_id":
+            self.single_read_retries[0x00] = 0
+        self._execute_read_field(field_name)
+
+    def _execute_read_field(self, field_name: str):
         log_console = self.get_log_console()
         medium_name = self._get_medium_name()
 
@@ -295,7 +308,10 @@ class TagFormFrame:
             if self.reader.is_connected():
                 self._register_pending_request(param_id, field_label, "Read", cmd_hex, conv_type, field_name)
                 self.reader.write_bytes(cmd_bytes)
-                write_log(f"{medium_name} TX Read Command ({field_label}): {cmd_hex}", log_console)
+                if field_name == "tag_id" and self.single_read_retries.get(0x00, 0) > 0:
+                    write_log(f"{medium_name} TX Read Command Retry ({field_label} retry {self.single_read_retries[0x00]}/2): {cmd_hex}", log_console)
+                else:
+                    write_log(f"{medium_name} TX Read Command ({field_label}): {cmd_hex}", log_console)
             else:
                 write_log(f"Read command failed for {field_name}: reader not connected", log_console)
                 messagebox.showwarning("Read Field", "Connect the reader before reading.")
@@ -309,9 +325,8 @@ class TagFormFrame:
                 messagebox.showwarning("Read Field", "This field is empty.")
 
     def read_all_fields(self):
-        """Sequentially transmit Read commands for all fields spaced 600ms apart."""
+        """Sequentially transmit Read commands for all fields with retry on Negative Response (2 retries at 250ms interval)."""
         log_console = self.get_log_console()
-        medium_name = self._get_medium_name()
 
         if not self.reader.is_connected():
             write_log("Read All failed: reader not connected", log_console)
@@ -320,24 +335,152 @@ class TagFormFrame:
 
         self.clear_pending_requests()
         write_log("Starting Read All fields sequence...", log_console)
-        commands = list(READ_COMMANDS.items())
-        interval_ms = 1000
+        self.read_all_commands = list(READ_COMMANDS.items())
+        self.read_all_index = 0
+        self.read_all_retries = 0
+        self.read_all_active = True
+        self._send_read_all_current()
 
-        def _send_next(index=0):
-            if index >= len(commands):
-                write_log("Read All sequence completed dispatching.", log_console)
+    def _send_read_all_current(self):
+        """Send the current Read All parameter command."""
+        self.read_all_timer_id = None
+        if not self.read_all_active:
+            return
+
+        if self.read_all_index >= len(self.read_all_commands):
+            self.read_all_active = False
+            write_log("Read All sequence completed.", self.get_log_console())
+            return
+
+        if not self.reader.is_connected():
+            self.read_all_active = False
+            write_log("Read All aborted: reader not connected", self.get_log_console())
+            return
+
+        field_name, (cmd_hex, conv_type, field_label, param_id) = self.read_all_commands[self.read_all_index]
+        medium_name = self._get_medium_name()
+        log_console = self.get_log_console()
+
+        cmd_bytes = bytes.fromhex(cmd_hex)
+        self._register_pending_request(param_id, field_label, "Read", cmd_hex, conv_type, field_name)
+        self.reader.write_bytes(cmd_bytes)
+
+        if self.read_all_retries > 0:
+            write_log(f"{medium_name} TX Read Command Retry ({field_label} retry {self.read_all_retries}/2): {cmd_hex}", log_console)
+        else:
+            write_log(f"{medium_name} TX Read Command ({field_label}): {cmd_hex}", log_console)
+
+        # Fallback timer: in case of no response or timeout, advance after 5500ms
+        self.read_all_timer_id = self.root.after(5500, self._on_read_all_timeout_advance)
+
+    def handle_negative_response(self, failed_cmd: int, error_code: int = 0):
+        """Handle negative response (0x7F) with retry mechanism for Read All sequence."""
+        if not self.read_all_active:
+            return
+
+        if self.read_all_index >= len(self.read_all_commands):
+            self.read_all_active = False
+            return
+
+        field_name, (cmd_hex, conv_type, field_label, param_id) = self.read_all_commands[self.read_all_index]
+
+        # Check if negative response corresponds to the currently active Read All parameter
+        if param_id == failed_cmd or failed_cmd == 0:
+            log_console = self.get_log_console()
+            if self.read_all_timer_id:
+                try:
+                    self.root.after_cancel(self.read_all_timer_id)
+                except Exception:
+                    pass
+                self.read_all_timer_id = None
+
+            if self.read_all_retries < 2:
+                self.read_all_retries += 1
+                write_log(
+                    f"Read All: Negative response for {field_label}. Retrying ({self.read_all_retries}/2) in 250ms...",
+                    log_console,
+                )
+                self.read_all_timer_id = self.root.after(250, self._send_read_all_current)
+            else:
+                write_log(
+                    f"Read All: {field_label} returned Negative Response after 2 retries. Moving to next parameter.",
+                    log_console,
+                )
+                self.read_all_index += 1
+                self.read_all_retries = 0
+                self.read_all_timer_id = self.root.after(250, self._send_read_all_current)
+
+    def handle_positive_response(self, param_id: int, decoded_val: str = ""):
+        """Handle positive response and check for all-zeros Tag ID retry or advance sequence."""
+        is_zero_tag = (param_id == 0x00 and (decoded_val.replace("0", "").strip() == "" or decoded_val == "000000000000000000000000"))
+
+        # Case 1: Read All sequence is active
+        if self.read_all_active:
+            if self.read_all_index >= len(self.read_all_commands):
+                self.read_all_active = False
                 return
 
-            field_name, (cmd_hex, conv_type, field_label, param_id) = commands[index]
-            if self.reader.is_connected():
-                cmd_bytes = bytes.fromhex(cmd_hex)
-                self._register_pending_request(param_id, field_label, "Read", cmd_hex, conv_type, field_name)
-                self.reader.write_bytes(cmd_bytes)
-                write_log(f"{medium_name} TX Read Command ({field_label}): {cmd_hex}", log_console)
+            field_name, (cmd_hex, conv_type, field_label, p_id) = self.read_all_commands[self.read_all_index]
+            if p_id == param_id:
+                if self.read_all_timer_id:
+                    try:
+                        self.root.after_cancel(self.read_all_timer_id)
+                    except Exception:
+                        pass
+                    self.read_all_timer_id = None
 
-            self.root.after(interval_ms, lambda: _send_next(index + 1))
+                # If Tag ID returned all zeros, trigger retry mechanism (up to 2 retries at 250ms)
+                if is_zero_tag:
+                    log_console = self.get_log_console()
+                    if self.read_all_retries < 2:
+                        self.read_all_retries += 1
+                        write_log(
+                            f"Read All: Zero Tag ID received ({decoded_val}). Retrying ({self.read_all_retries}/2) in 250ms...",
+                            log_console,
+                        )
+                        self.read_all_timer_id = self.root.after(250, self._send_read_all_current)
+                        return
+                    else:
+                        write_log(
+                            f"Read All: Tag ID returned all zeros ({decoded_val}) after 2 retries. Moving to next parameter.",
+                            log_console,
+                        )
+                        self.read_all_index += 1
+                        self.read_all_retries = 0
+                        self.read_all_timer_id = self.root.after(250, self._send_read_all_current)
+                        return
 
-        _send_next(0)
+                # Normal non-zero parameter response -> advance to next field
+                self.read_all_index += 1
+                self.read_all_retries = 0
+                self.read_all_timer_id = self.root.after(600, self._send_read_all_current)
+                return
+
+        # Case 2: Single Tag ID read was executed
+        elif is_zero_tag:
+            retries = self.single_read_retries.get(0x00, 0)
+            if retries < 2:
+                self.single_read_retries[0x00] = retries + 1
+                log_console = self.get_log_console()
+                write_log(
+                    f"Read Tag ID returned all zeros ({decoded_val}). Retrying ({self.single_read_retries[0x00]}/2) in 250ms...",
+                    log_console,
+                )
+                self.root.after(250, lambda: self._execute_read_field("tag_id"))
+            else:
+                log_console = self.get_log_console()
+                write_log(
+                    f"Read Tag ID returned all zeros ({decoded_val}) after 2 retries.",
+                    log_console,
+                )
+
+    def _on_read_all_timeout_advance(self):
+        """Fallback timer to advance Read All if parameter timed out without response."""
+        self.read_all_timer_id = None
+        if self.read_all_active:
+            self.read_all_index += 1
+            self.read_all_retries = 0
+            self._send_read_all_current()
 
     def write_field(self, field_name: str):
         log_console = self.get_log_console()
@@ -368,6 +511,13 @@ class TagFormFrame:
     def clear_pending_requests(self):
         """Immediately clear pending request tracking (e.g. on disconnect or medium change)."""
         self.pending_requests.clear()
+        self.read_all_active = False
+        if self.read_all_timer_id:
+            try:
+                self.root.after_cancel(self.read_all_timer_id)
+            except Exception:
+                pass
+            self.read_all_timer_id = None
 
     def clear_fields(self):
         self.clear_pending_requests()

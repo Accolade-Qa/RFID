@@ -215,6 +215,9 @@ class RFIDApp:
                 else:
                     write_log(f"UART RX Negative Response (Error 0x{error_code:02X}: {ERROR_CODES.get(error_code, 'Error')})", log_console)
                     self.comm_panel_comp.show_fail(error_code=error_code)
+
+                if hasattr(self.tag_form_comp, "handle_negative_response"):
+                    self.tag_form_comp.handle_negative_response(failed_cmd, error_code)
                 return
 
             # Positive Response Payload extraction
@@ -327,6 +330,9 @@ class RFIDApp:
                         conversion=conv_type,
                         medium=medium,
                     )
+
+                    if hasattr(self.tag_form_comp, "handle_positive_response"):
+                        self.tag_form_comp.handle_positive_response(param_id, decoded_val)
                 else:
                     # Late response arrived after 5-second timeout -> ignore and preserve NO RESPONSE status
                     write_log(
