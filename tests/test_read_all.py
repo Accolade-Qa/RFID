@@ -107,5 +107,54 @@ class TestReadAllRetry(unittest.TestCase):
         serial_cmd_bytes = bytes.fromhex(READ_COMMANDS["serial"][0])
         self.assertEqual(self.reader.written_bytes[3], serial_cmd_bytes)
 
+    def test_write_field_retry_on_negative_response(self):
+        import time
+        self.tag_form.set_field_value("axle", "3")
+        self.tag_form.write_field("axle")
+
+        # Initial write transmission (param_id = 0x03)
+        self.assertEqual(len(self.reader.written_bytes), 1)
+        self.assertIn(0x03, self.tag_form.pending_requests)
+
+        # Trigger Negative Response failure callback (as ui/app.py does by popping request)
+        cb = self.tag_form.pending_requests.pop(0x03)["on_failure"]
+        cb("NACK")
+        time.sleep(0.3)
+        self.root.update()
+
+        # Should have sent retry attempt 1
+        self.assertEqual(len(self.reader.written_bytes), 2)
+        self.assertIn(0x03, self.tag_form.pending_requests)
+
+    def test_write_field_ends_after_max_retries(self):
+        import time
+        self.tag_form.set_field_value("axle", "3")
+        self.tag_form.write_field("axle")
+
+        # Attempt 1
+        self.assertEqual(len(self.reader.written_bytes), 1)
+        cb = self.tag_form.pending_requests.pop(0x03)["on_failure"]
+        cb("NACK")
+        time.sleep(0.3)
+        self.root.update()
+
+        # Attempt 2 (retry 1)
+        self.assertEqual(len(self.reader.written_bytes), 2)
+        cb = self.tag_form.pending_requests.pop(0x03)["on_failure"]
+        cb("NACK")
+        time.sleep(0.3)
+        self.root.update()
+
+        # Attempt 3 (retry 2)
+        self.assertEqual(len(self.reader.written_bytes), 3)
+        cb = self.tag_form.pending_requests.pop(0x03)["on_failure"]
+        cb("NACK")
+        time.sleep(0.3)
+        self.root.update()
+
+        # Loop ends: no further retries sent
+        self.assertEqual(len(self.reader.written_bytes), 3)
+        self.assertNotIn(0x03, self.tag_form.pending_requests)
+
 if __name__ == "__main__":
     unittest.main()

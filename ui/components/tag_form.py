@@ -68,6 +68,7 @@ class TagFormFrame:
         self.request_counter = 0
         self._read_all_active = False
         self._read_all_job = None
+        self._write_jobs = {}
 
         self.form_container = tk.LabelFrame(
             parent_frame,
@@ -450,21 +451,70 @@ class TagFormFrame:
             messagebox.showwarning("Write Field", f"Please enter a value for {field_name.replace('_', ' ').title()} before writing.")
             return
 
-        try:
-            # Build 0x29 SET Transmission Frame with CRC-16/CCITT-FALSE
-            frame_bytes, frame_hex, metadata = build_write_transmission_frame(field_name, val)
-            
-            if self.reader.is_connected():
-                param_id = int(metadata["Field_ID"], 16) if "Field_ID" in metadata else 0
-                self._register_pending_request(param_id, metadata["Name"], "Write", frame_hex, metadata["Conversion"], field_name)
-                self.reader.write_bytes(frame_bytes)
-                write_log(f"{medium_name} TX Write Transmission Frame ({metadata['Name']}): {frame_hex}", log_console)
-            else:
+        max_retries = 2
+        retry_delay_ms = 250
+
+        def _execute_write(retry_count: int = 0):
+            if not self.reader.is_connected():
                 write_log(f"Write command failed for {field_name}: reader not connected", log_console)
                 messagebox.showwarning("Write Field", "Connect the reader before writing.")
-        except Exception as e:
-            write_log(f"Write field error: {e}", log_console)
-            messagebox.showerror("Write Field Error", str(e))
+                return
+
+            try:
+                # Build 0x29 SET Transmission Frame with CRC-16/CCITT-FALSE
+                frame_bytes, frame_hex, metadata = build_write_transmission_frame(field_name, val)
+                param_id = int(metadata["Field_ID"], 16) if "Field_ID" in metadata else 0
+
+                def _on_success(decoded_val):
+                    self._write_jobs.pop(param_id, None)
+
+                def _on_failure(err):
+                    self._write_jobs.pop(param_id, None)
+                    if retry_count < max_retries:
+                        next_retry = retry_count + 1
+                        write_log(
+                            f"{medium_name} Write: Negative Response received for {metadata['Name']}. Retrying in 250ms (Attempt {next_retry + 1}/{max_retries + 1})...",
+                            log_console,
+                        )
+                        job = self.root.after(retry_delay_ms, lambda: _execute_write(next_retry))
+                        self._write_jobs[param_id] = job
+                    else:
+                        write_log(
+                            f"{medium_name} Write: {metadata['Name']} failed after {max_retries} retries.",
+                            log_console,
+                        )
+
+                # Cancel previous job for this param if any
+                old_job = self._write_jobs.pop(param_id, None)
+                if old_job:
+                    try:
+                        self.root.after_cancel(old_job)
+                    except Exception:
+                        pass
+
+                self._register_pending_request(
+                    param_id=param_id,
+                    field_label=metadata["Name"],
+                    operation="Write",
+                    cmd_hex=frame_hex,
+                    conv_type=metadata["Conversion"],
+                    field_name=field_name,
+                    on_success=_on_success,
+                    on_failure=_on_failure,
+                )
+                self.reader.write_bytes(frame_bytes)
+                if retry_count == 0:
+                    write_log(f"{medium_name} TX Write Transmission Frame ({metadata['Name']}): {frame_hex}", log_console)
+                else:
+                    write_log(
+                        f"{medium_name} TX Write Transmission Frame Retry {retry_count}/{max_retries} ({metadata['Name']}): {frame_hex}",
+                        log_console,
+                    )
+            except Exception as e:
+                write_log(f"Write field error: {e}", log_console)
+                messagebox.showerror("Write Field Error", str(e))
+
+        _execute_write(0)
 
     def clear_pending_requests(self):
         """Immediately clear pending request tracking (e.g. on disconnect or medium change)."""
@@ -475,6 +525,13 @@ class TagFormFrame:
             except Exception:
                 pass
             self._read_all_job = None
+
+        for job in list(self._write_jobs.values()):
+            try:
+                self.root.after_cancel(job)
+            except Exception:
+                pass
+        self._write_jobs.clear()
         self.pending_requests.clear()
 
     def clear_fields(self):
