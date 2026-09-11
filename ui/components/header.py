@@ -23,13 +23,14 @@ def build_header_frame(parent_frame, base_dir: Path) -> ttkb.Frame:
             photo = None
 
     if photo:
+        # pyrefly: ignore [unexpected-keyword]
         logo_label = ttkb.Label(inner_container, image=photo, bootstyle="light")
         logo_label.image = photo  # Keep reference
         logo_label.pack(side="left", padx=(0, 24), pady=(5, 5))
 
     header_text = ttkb.Label(
         inner_container,
-        text="RFID Tag Reader & Writer",
+        text="RFID Tag Reader - Production",
         style="Title.TLabel",
     )
     header_text.pack(side="left", pady=10)
