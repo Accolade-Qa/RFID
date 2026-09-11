@@ -152,9 +152,32 @@ class TestReadAllRetry(unittest.TestCase):
         time.sleep(0.3)
         self.root.update()
 
-        # Loop ends: no further retries sent
-        self.assertEqual(len(self.reader.written_bytes), 3)
-        self.assertNotIn(0x03, self.tag_form.pending_requests)
+    def test_read_all_sequence_stops_at_gvw_and_skips_cert(self):
+        import time
+        self.tag_form.read_all_fields()
+
+        # Iterate through all 6 fields in READ_ALL_FIELDS
+        expected_params = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05]
+        for idx, param in enumerate(expected_params):
+            self.assertEqual(len(self.reader.written_bytes), idx + 1)
+            self.assertIn(param, self.tag_form.pending_requests)
+            # Send positive response for this field
+            cb = self.tag_form.pending_requests.pop(param)["on_success"]
+            cb("TEST_VAL" if param != 0x00 else "E28068900000000000000001")
+            time.sleep(0.6)
+            self.root.update()
+
+        # Sequence should be completed after GVW (0x05) without requesting TA Certification (0x06)
+        self.assertEqual(len(self.reader.written_bytes), 6)
+        self.assertFalse(self.tag_form._read_all_active)
+        self.assertNotIn(0x06, self.tag_form.pending_requests)
+
+    def test_individual_read_cert_still_works(self):
+        self.tag_form.read_field("cert")
+        self.assertEqual(len(self.reader.written_bytes), 1)
+        cert_cmd_bytes = bytes.fromhex(READ_COMMANDS["cert"][0])
+        self.assertEqual(self.reader.written_bytes[0], cert_cmd_bytes)
+        self.assertIn(0x06, self.tag_form.pending_requests)
 
 if __name__ == "__main__":
     unittest.main()

@@ -39,6 +39,8 @@ READ_COMMANDS = {
     "cert": ("24110106813623", "hex as it is", "TA Certification", 0x06),
 }
 
+READ_ALL_FIELDS = ("tag_id", "serial", "vin", "axle", "registration", "gvw")
+
 PLACEHOLDERS = {
     "tag_id": TAG_ID_PLACEHOLDER,
     "serial": SERIAL_PLACEHOLDER,
@@ -341,7 +343,7 @@ class TagFormFrame:
 
         self.clear_pending_requests()
         write_log("Starting Read All fields sequence with auto-retry (max 2 retries per field)...", log_console)
-        commands = list(READ_COMMANDS.items())
+        commands = [(k, READ_COMMANDS[k]) for k in READ_ALL_FIELDS if k in READ_COMMANDS]
         self._read_all_active = True
         max_retries = 2
         delay_between_fields_ms = 500
