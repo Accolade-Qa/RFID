@@ -329,7 +329,7 @@ class TagFormFrame:
                 messagebox.showwarning("Read Field", "This field is empty.")
 
     def read_all_fields(self):
-        """Sequentially transmit Read commands for all fields with automatic retry (up to 2 retries per field)."""
+        """Sequentially transmit Read commands for all fields with automatic retry (up to 2 retries per field on failure or zero Tag ID)."""
         log_console = self.get_log_console()
         medium_name = self._get_medium_name()
 
@@ -343,8 +343,8 @@ class TagFormFrame:
         commands = list(READ_COMMANDS.items())
         self._read_all_active = True
         max_retries = 2
-        delay_between_fields_ms = 1000
-        retry_delay_ms = 500
+        delay_between_fields_ms = 500
+        retry_delay_ms = 250
 
         def _execute_field(index: int = 0, retry_count: int = 0):
             if not self._read_all_active or not self.reader.is_connected():
@@ -362,19 +362,62 @@ class TagFormFrame:
             def _on_success(decoded_val):
                 if not self._read_all_active:
                     return
+
+                # Check if Tag ID returned all zeros or empty
+                is_zero_tag = (
+                    field_name == "tag_id"
+                    and (
+                        decoded_val.replace("0", "").strip() == ""
+                        or decoded_val == "000000000000000000000000"
+                    )
+                )
+
+                if is_zero_tag:
+                    if retry_count < max_retries:
+                        next_retry = retry_count + 1
+                        write_log(
+                            f"{medium_name} Read All: Tag ID returned all zeros ({decoded_val}). Retrying in 250ms (Attempt {next_retry + 1}/{max_retries + 1})...",
+                            log_console,
+                        )
+                        self._read_all_job = self.root.after(
+                            retry_delay_ms, lambda: _execute_field(index, next_retry)
+                        )
+                        return
+                    else:
+                        write_log(
+                            f"{medium_name} Read All: Tag ID returned all zeros ({decoded_val}) after {max_retries} retries, proceeding to next field...",
+                            log_console,
+                        )
+                        self._read_all_job = self.root.after(
+                            delay_between_fields_ms, lambda: _execute_field(index + 1, 0)
+                        )
+                        return
+
                 # Field succeeded -> move to next field
-                self._read_all_job = self.root.after(delay_between_fields_ms, lambda: _execute_field(index + 1, 0))
+                self._read_all_job = self.root.after(
+                    delay_between_fields_ms, lambda: _execute_field(index + 1, 0)
+                )
 
             def _on_failure(err):
                 if not self._read_all_active:
                     return
                 if retry_count < max_retries:
                     next_retry = retry_count + 1
-                    write_log(f"{medium_name} Read All: Retrying {field_label} (Attempt {next_retry + 1}/{max_retries + 1})...", log_console)
-                    self._read_all_job = self.root.after(retry_delay_ms, lambda: _execute_field(index, next_retry))
+                    write_log(
+                        f"{medium_name} Read All: {field_label} failed. Retrying in 250ms (Attempt {next_retry + 1}/{max_retries + 1})...",
+                        log_console,
+                    )
+                    self._read_all_job = self.root.after(
+                        retry_delay_ms, lambda: _execute_field(index, next_retry)
+                    )
                 else:
-                    write_log(f"{medium_name} Read All: {field_label} failed after {max_retries} retries, proceeding to next field...", log_console)
-                    self._read_all_job = self.root.after(delay_between_fields_ms, lambda: _execute_field(index + 1, 0))
+                    write_log(
+                        f"{medium_name} Read All: {field_label} failed after {max_retries} retries, proceeding to next field...",
+                        log_console,
+                    )
+                    self._read_all_job = self.root.after(
+                        delay_between_fields_ms, lambda: _execute_field(index + 1, 0)
+                    )
 
             self._register_pending_request(
                 param_id=param_id,
@@ -390,7 +433,10 @@ class TagFormFrame:
             if retry_count == 0:
                 write_log(f"{medium_name} TX Read Command ({field_label}): {cmd_hex}", log_console)
             else:
-                write_log(f"{medium_name} TX Read Command Retry {retry_count}/{max_retries} ({field_label}): {cmd_hex}", log_console)
+                write_log(
+                    f"{medium_name} TX Read Command Retry {retry_count}/{max_retries} ({field_label}): {cmd_hex}",
+                    log_console,
+                )
 
         _execute_field(0, 0)
 

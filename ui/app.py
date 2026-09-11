@@ -200,6 +200,9 @@ class RFIDApp:
             if tag_byte == 0x7F:
                 failed_cmd = frame[header_offset] if len(frame) > header_offset else 0
                 error_code = frame[header_offset + 1] if len(frame) > (header_offset + 1) else 0x01
+                if failed_cmd not in self.tag_form_comp.pending_requests and len(self.tag_form_comp.pending_requests) == 1:
+                    failed_cmd = next(iter(self.tag_form_comp.pending_requests.keys()))
+
                 if failed_cmd in self.tag_form_comp.pending_requests:
                     pending_info = self.tag_form_comp.pending_requests.pop(failed_cmd)
                     on_failure_cb = pending_info.get("on_failure")
