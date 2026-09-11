@@ -369,8 +369,8 @@ class RFIDApp:
                     # 1. Update UI Entry Box immediately
                     self.tag_form_comp.set_field_value(var_name, decoded_val)
 
-                    # 2. Display PASS Card with positive response payload hex
-                    self.comm_panel_comp.show_pass(payload_hex_spaced)
+                    # 2. Display PASS Card with decoded positive response matching the input field
+                    self.comm_panel_comp.show_pass(decoded_val)
 
                     # 3. Log clean text line in console window
                     write_log(f"{medium} RX ({field_label}): {decoded_val} [Response: {payload_hex_spaced}]", log_console)
