@@ -113,6 +113,7 @@ class CommPanelFrame:
                 textvariable=variable,
                 values=values,
                 state="readonly",
+                # pyrefly: ignore [unexpected-keyword]
                 bootstyle="info",
                 width=13,
             )
@@ -127,6 +128,7 @@ class CommPanelFrame:
             button_frame_comm,
             text="Connect",
             command=self.connect_reader,
+            # pyrefly: ignore [unexpected-keyword]
             bootstyle="success",
             width=11,
         )
@@ -136,6 +138,7 @@ class CommPanelFrame:
             button_frame_comm,
             text="Disconnect",
             command=self.disconnect_reader,
+            # pyrefly: ignore [unexpected-keyword]
             bootstyle="danger",
             state="disabled",
             width=11,
