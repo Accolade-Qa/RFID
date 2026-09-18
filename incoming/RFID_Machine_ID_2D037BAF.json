@@ -1,0 +1,12 @@
+{
+    "version": 1,
+    "product": "RFID Utility",
+    "machine": {
+        "system_uuid": "046B254C-2492-11B2-A85C-E8976096381D",
+        "motherboard_serial": "L1HF56V06DE",
+        "bios_serial": "PG055R69",
+        "system_manufacturer": "LENOVO",
+        "system_model": "21T9005UIG"
+    },
+    "fingerprint": "2d037baf3267b100a0432fe3fc42d9d7b75eb5913cabb165cfd642952b30d63a"
+}

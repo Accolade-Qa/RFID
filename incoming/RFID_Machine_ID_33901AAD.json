@@ -1,0 +1,12 @@
+{
+    "version": 1,
+    "product": "RFID Utility",
+    "machine": {
+        "system_uuid": "849B99CC-2FFF-11B2-A85C-F193FD2D21A7",
+        "motherboard_serial": "L1HF3AE01SB",
+        "bios_serial": "PG04506Y",
+        "system_manufacturer": "LENOVO",
+        "system_model": "21JKS0LT00"
+    },
+    "fingerprint": "33901aad6aea66985d38869824eb7daf152822e82a73efa5377533959e893ed5"
+}

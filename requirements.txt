@@ -4,3 +4,4 @@ pyserial>=3.5
 pyserial-asyncio
 python-can>=4.3.0
 openpyxl
+cryptography>=42.0.0

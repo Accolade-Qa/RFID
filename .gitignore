@@ -6,7 +6,6 @@ __pycache__/
 verifier.py
 Ui.py/
 rfid/
-security/
 activity_records.json
 
 # PyInstaller & Build outputs
@@ -15,3 +14,16 @@ dist/
 *.exe
 *.spec
 *.log
+
+
+.venv/
+__pycache__/
+*.pyc
+
+# Local license
+license/license.json
+
+# Private signing material
+private_key.pem
+private_key.*
+keys/private_key.*

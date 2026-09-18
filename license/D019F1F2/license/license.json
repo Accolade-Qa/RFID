@@ -1,0 +1,17 @@
+{
+    "payload": {
+        "version": 1,
+        "product": "RFID Utility",
+        "license_id": "30fe0909-9828-48f9-8bf4-926778c05d9f",
+        "issued_at": "2026-09-17T13:42:11.848060+00:00",
+        "machine": {
+            "system_uuid": "88C1E04C-26FE-11B2-A85C-BE878BBB6E4A",
+            "motherboard_serial": "L1HF57G02PK",
+            "bios_serial": "PG05857N",
+            "system_manufacturer": "LENOVO",
+            "system_model": "21T9005UIG"
+        },
+        "fingerprint": "d019f1f29f49f4aeab89cdd0a4e15752173f4cac9e58d81183c559111bca7c04"
+    },
+    "signature": "lVo9BInXuzfqpV96SNlXqxFzhGgg5zXie6oN84xSNB5hzyPF3FdUXO9zZ7wwU94lZg8UrwSJp9f09/hRY4WkDw=="
+}

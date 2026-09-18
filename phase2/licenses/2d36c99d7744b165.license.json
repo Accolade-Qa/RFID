@@ -1,0 +1,10 @@
+{
+    "payload": {
+        "version": 1,
+        "product": "RFID Utility modify",
+        "machine_fingerprint": "2d36c99d7744b16569feab660a6abb871db3edffbd81d4acdf9f172293cfddb7",
+        "issued_at": "2026-09-17T09:07:17.032439+00:00",
+        "license_id": "a8302f4b-f9a2-4d4f-ada1-cfb90e9a0999"
+    },
+    "signature": "3N9kt+BdxchaVz5ZxI6lFAr6ZrWli6rgp59AkY2daexDmZXIOk7oE4PX2iwbVIOiYF/mlPy2HmQenzPSh0VKAw=="
+}
