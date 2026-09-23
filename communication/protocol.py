@@ -1,6 +1,6 @@
 """Protocol frame construction and CRC calculation for RFID reader communication."""
 
-from communication.crc import compute_crc16_ccitt_false, crc_to_bytes
+from communication.crc import aepl_rfid_calculate_crc16, crc_to_bytes
 
 HEADER = 0x24       # '$'
 TRAILER = 0x23      # '#'
@@ -111,7 +111,8 @@ def build_write_transmission_frame(field_name: str, input_value: str) -> tuple[b
     length = len(body)
 
     # Compute CRC-16/CCITT-FALSE over body
-    crc_val = compute_crc16_ccitt_false(body)
+    # crc_val = compute_crc16_ccitt_false(body)
+    crc_val = aepl_rfid_calculate_crc16(body, length)
     crc_bytes = crc_to_bytes(crc_val, big_endian=True)
 
     # Complete frame
