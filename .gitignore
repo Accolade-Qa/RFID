@@ -21,7 +21,7 @@ __pycache__/
 *.pyc
 
 # Local license
-license/license.json
+license/
 
 # Private signing material
 private_key.pem
