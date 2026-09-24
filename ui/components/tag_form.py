@@ -14,12 +14,15 @@ from validation import (
     validate_vin_entry,
     validate_registration_entry,
     validate_numeric_range_entry,
-    validate_gvw_decimal_entry
+    validate_gvw_decimal_entry,
 )
+
+from validation import REL_VERSION_PLACEHOLDER,validate_rel_version_entry
 from logger import write_log
 from communication.protocol import build_write_transmission_frame
 
 FIELD_ROWS = [
+    ("Rel Version", "rel_version"),
     ("Tag ID", "tag_id"),
     ("Serial Number", "serial"),
     ("TA Certification", "cert"),
@@ -29,17 +32,20 @@ FIELD_ROWS = [
     ("Axle Count", "axle"),
 ]
 
+# for MTBD
 READ_COMMANDS = {
-    "tag_id": ("24110100E1F023", "hex as it is", "Tag ID", 0x00),
-    "serial": ("24110101F1D123", "alphanumeric", "Serial Number", 0x01),
-    "vin": ("24110102C1B223", "alphanumeric", "VIN", 0x02),
-    "axle": ("24110103D19323", "numerical", "Axle Count", 0x03),
-    "registration": ("24110104A17423", "alphanumeric", "Registration No.", 0x04),
-    "gvw": ("24110105B15523", "decimal", "GVW/GCW", 0x05),
-    "cert": ("24110106813623", "hex as it is", "TA Certification", 0x06),
+    "rel_version": ("2411022317B6D023", "hex as it is", "Rel Version", 0x00),
+    "tag_id": ("241101008BFE23", "hex as it is", "Tag ID", 0x00),
+    "serial": ("241101019BDF23", "alphanumeric", "Serial Number", 0x01),
+    "vin": ("24110102ABBC23", "alphanumeric", "VIN", 0x02),
+    "axle": ("24110103BB9D23", "numerical", "Axle Count", 0x03),
+    "registration": ("24110104CB7A23", "alphanumeric", "Registration No.", 0x04),
+    "gvw": ("24110105B15523", "decimal", "GVW/GCW", 0x05),  # pending command from AEPL
+    "cert": ("24110106813623", "hex as it is", "TA Certification", 0x06), # pending command from AEPL
 }
 
 PLACEHOLDERS = {
+    "rel_version": REL_VERSION_PLACEHOLDER,
     "tag_id": TAG_ID_PLACEHOLDER,
     "serial": SERIAL_PLACEHOLDER,
     "vin": VIN_PLACEHOLDER,
@@ -100,8 +106,15 @@ class TagFormFrame:
                 "bootstyle": "info",
                 "state": "normal",
             }
+            if var_name == "rel_version":
+                entry_options["validate"] = "key"
+                entry_options["validatecommand"] = (
+                    self.root.register(validate_rel_version_entry),
+                    "%P",
+                )
+                entry = ttkb.Entry(self.form_grid, **entry_options)
 
-            if var_name == "tag_id":
+            elif var_name == "tag_id":
                 entry_options["validate"] = "key"
                 entry_options["validatecommand"] = (
                     self.root.register(validate_tag_id_entry),
@@ -173,7 +186,7 @@ class TagFormFrame:
             )
 
             # Write button alongside field (except for Tag ID)
-            if var_name != "tag_id":
+            if var_name != "tag_id" and var_name != "rel_version":
                 ttkb.Button(
                     self.form_grid,
                     text="Write",

@@ -1,11 +1,27 @@
 """Validation functions for RFID UI field entries."""
 
+REL_VERSION_PLACEHOLDER = "1.0.0_REL18_R_MTBD.bin"
 TAG_ID_PLACEHOLDER = "(Alphanumeric: Max 24 Characters)"
 SERIAL_PLACEHOLDER = "(Alphanumeric: Max 16 characters)"
 VIN_PLACEHOLDER = "(Alphanumeric: Max 17 Characters)"
 AXLE_PLACEHOLDER = "(Numeric: 0 to 65535)"
 GVW_PLACEHOLDER = "(Decimal: e.g. 45000.50)"
 REGISTRATION_PLACEHOLDER = "(Alphanumeric: Max 12 Characters)"
+
+
+def is_rel_version_valid(value: str) -> bool:
+    return (
+        len(value) <= 10
+        and value.replace(".", "").replace("-", "").isalnum()
+        and value.count(".") <= 2
+        and value.count("-") <= 1
+    )
+
+
+def validate_rel_version_entry(new_value: str) -> bool:
+    if new_value == "" or new_value == REL_VERSION_PLACEHOLDER:
+        return True
+    return is_rel_version_valid(new_value)
 
 
 def is_tag_id_valid(value: str) -> bool:
@@ -77,4 +93,3 @@ def validate_gvw_decimal_entry(new_value: str, max_digits: int = 12) -> bool:
     if len(parts) > 2:
         return False
     return all(part == "" or part.isdigit() for part in parts)
-
