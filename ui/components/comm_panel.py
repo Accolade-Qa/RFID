@@ -105,6 +105,7 @@ class CommPanelFrame:
                 textvariable=variable,
                 values=values,
                 state="readonly",
+                # pyrefly: ignore [unexpected-keyword]
                 bootstyle="info",
                 width=13,
             )
@@ -125,6 +126,7 @@ class CommPanelFrame:
             button_frame_comm,
             text="Connect",
             command=self.connect_reader,
+            # pyrefly: ignore [unexpected-keyword]
             bootstyle="success",
             width=11,
         )
@@ -134,6 +136,7 @@ class CommPanelFrame:
             button_frame_comm,
             text="Disconnect",
             command=self.disconnect_reader,
+            # pyrefly: ignore [unexpected-keyword]
             bootstyle="danger",
             state="disabled",
             width=11,
@@ -144,6 +147,7 @@ class CommPanelFrame:
             button_frame_comm,
             text="CAN IDs",
             command=self.open_can_id_dialog,
+            # pyrefly: ignore [unexpected-keyword]
             bootstyle="primary",
             width=10,
         )
@@ -210,6 +214,7 @@ class CommPanelFrame:
         rx_entry.grid(row=1, column=1, sticky="w", padx=10, pady=4)
 
         ext_var = tk.BooleanVar(value=getattr(self.reader, 'is_extended_id', CAN_IS_EXTENDED_ID))
+        # pyrefly: ignore [unexpected-keyword]
         ttkb.Checkbutton(grid_frame, text="Extended 29-bit CAN ID", variable=ext_var, bootstyle="info-square-toggle").grid(
             row=2, column=0, columnspan=2, sticky="w", pady=6
         )
@@ -263,6 +268,7 @@ class CommPanelFrame:
             except ValueError:
                 messagebox.showerror("Invalid Input", "Please enter valid Hexadecimal values for CAN IDs (e.g. 0x7E0 or 7E0).")
 
+        # pyrefly: ignore [unexpected-keyword]
         ttkb.Button(container, text="Apply CAN Settings", command=_save_can_ids, bootstyle="success").pack(side="right", pady=15)
 
     def _build_diag_card(self):
