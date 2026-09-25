@@ -11,10 +11,8 @@ REGISTRATION_PLACEHOLDER = "(Alphanumeric: Max 12 Characters)"
 
 def is_rel_version_valid(value: str) -> bool:
     return (
-        len(value) <= 10
-        and value.replace(".", "").replace("-", "").isalnum()
-        and value.count(".") <= 2
-        and value.count("-") <= 1
+        len(value) <= 26
+        and value.replace(".", "").replace("-", "").replace("_", "").isalnum()
     )
 
 

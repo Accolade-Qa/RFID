@@ -34,7 +34,6 @@ FIELD_ROWS = [
 
 # for MTBD
 READ_COMMANDS = {
-    "rel_version": ("2411022317B6D023", "hex as it is", "Rel Version", 0x00),
     "tag_id": ("241101008BFE23", "hex as it is", "Tag ID", 0x00),
     "serial": ("241101019BDF23", "alphanumeric", "Serial Number", 0x01),
     "vin": ("24110102ABBC23", "alphanumeric", "VIN", 0x02),
@@ -42,18 +41,19 @@ READ_COMMANDS = {
     "registration": ("24110104CB7A23", "alphanumeric", "Registration No.", 0x04),
     "gvw": ("24110105B15523", "decimal", "GVW/GCW", 0x05),  # pending command from AEPL
     "cert": ("24110106813623", "hex as it is", "TA Certification", 0x06), # pending command from AEPL
+    "rel_version": ("2411022338635D23", "hex as it is", "Rel Version", 0x07),
 }
 
-READ_ALL_FIELDS = ("tag_id", "serial", "vin", "axle", "registration", "gvw")
+READ_ALL_FIELDS = ("tag_id", "serial", "vin", "axle", "registration", "gvw", "rel_version")
 
 PLACEHOLDERS = {
-    "rel_version": REL_VERSION_PLACEHOLDER,
     "tag_id": TAG_ID_PLACEHOLDER,
     "serial": SERIAL_PLACEHOLDER,
     "vin": VIN_PLACEHOLDER,
     "axle": AXLE_PLACEHOLDER,
     "gvw": GVW_PLACEHOLDER,
     "registration": REGISTRATION_PLACEHOLDER,
+    "rel_version": REL_VERSION_PLACEHOLDER,
 }
 
 PLACEHOLDER_COLOR = "#9CA3AF"

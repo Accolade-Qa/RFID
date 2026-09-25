@@ -358,6 +358,18 @@ class RFIDApp:
                 conv_type = "hex as it is"
                 decoded_val = data_bytes.hex().upper()
 
+            elif tag_byte in (0x47, 0x07):  # Release Version (0x07) -> Printable text or hex fallback
+                param_id = 0x07
+                var_name = "rel_version"
+                field_label = "Rel Version"
+                conv_type = "alphanumeric"
+                try:
+                    decoded_val = data_bytes.decode("ascii", errors="ignore").strip()
+                    if not decoded_val:
+                        decoded_val = data_bytes.hex().upper()
+                except Exception:
+                    decoded_val = data_bytes.hex().upper()
+
             if var_name:
                 if param_id in self.tag_form_comp.pending_requests:
                     # Retrieve matching command_sent hex from pending_requests

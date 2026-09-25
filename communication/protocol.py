@@ -56,6 +56,14 @@ FIELD_SPECS = {
         "conversion": "hex as it is",
         "name": "Meta Data",
     },
+    "rel_version": {
+        "field_id": 0x07,
+        "dtype": "string",
+        "data_len": 50,
+        "reserve_len": 0,
+        "conversion": "alphanumeric",
+        "name": "Release Version",
+    },
 }
 
 
