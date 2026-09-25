@@ -213,7 +213,20 @@ class CANReader(BaseCommunicator):
         self._last_rx_time = now
         self._rx_reassembly_buffer.extend(data)
 
-        if b"\x23" in self._rx_reassembly_buffer:
+        buf = self._rx_reassembly_buffer
+        if buf and buf[0] == 0x24 and len(buf) >= 3:
+            length_byte = buf[2]
+            candidate_lengths = (
+                length_byte + 4,
+                length_byte + 6,
+                length_byte + 5,
+                length_byte + 7,
+            )
+            for exp_len in candidate_lengths:
+                if len(buf) >= exp_len and buf[exp_len - 1] == 0x23:
+                    self._flush_reassembly_buffer()
+                    return
+        elif buf and len(buf) >= 5 and buf[-1] == 0x23:
             self._flush_reassembly_buffer()
 
     def _flush_reassembly_buffer(self):

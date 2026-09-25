@@ -200,10 +200,15 @@ class RFIDApp:
             if tag_byte == 0x7F:
                 failed_cmd = frame[header_offset] if len(frame) > header_offset else 0
                 error_code = frame[header_offset + 1] if len(frame) > (header_offset + 1) else 0x01
+                if failed_cmd not in self.tag_form_comp.pending_requests and len(self.tag_form_comp.pending_requests) == 1:
+                    failed_cmd = next(iter(self.tag_form_comp.pending_requests.keys()))
+
                 if failed_cmd in self.tag_form_comp.pending_requests:
-                    self.tag_form_comp.pending_requests.pop(failed_cmd)
+                    pending_info = self.tag_form_comp.pending_requests.pop(failed_cmd)
+                    on_failure_cb = pending_info.get("on_failure")
+
                     self.comm_panel_comp.show_fail(error_code=error_code)
-                    write_log(f"UART RX Negative Response for Cmd 0x{failed_cmd:02X} (Error 0x{error_code:02X}: {ERROR_CODES.get(error_code, 'Error')})", log_console)
+                    write_log(f"{medium} RX Negative Response for Cmd 0x{failed_cmd:02X} (Error 0x{error_code:02X}: {ERROR_CODES.get(error_code, 'Error')})", log_console)
                     log_console.append_json(
                         name=f"Cmd 0x{failed_cmd:02X}",
                         operation="Negative Response",
@@ -212,21 +217,54 @@ class RFIDApp:
                         conversion="error",
                         medium=medium,
                     )
+                    if callable(on_failure_cb):
+                        try:
+                            on_failure_cb(error_code)
+                        except Exception:
+                            pass
                 else:
-                    write_log(f"UART RX Negative Response (Error 0x{error_code:02X}: {ERROR_CODES.get(error_code, 'Error')})", log_console)
+                    write_log(f"{medium} RX Negative Response (Error 0x{error_code:02X}: {ERROR_CODES.get(error_code, 'Error')})", log_console)
                     self.comm_panel_comp.show_fail(error_code=error_code)
                 return
 
-            # Positive Response Payload extraction
+            # Positive Response Payload extraction using Frame's Length Byte
+            length_byte = frame[2] if is_full_frame and len(frame) > 2 else (frame[0] if len(frame) > 0 else 0)
+
             # Check if tag_byte is 0x69 or 0x29 (SET Transmission Command ID response)
             if tag_byte in (0x69, 0x29):
                 field_id = frame[header_offset] if len(frame) > header_offset else 0  # e.g. 0x03 for Axle Count
                 tag_byte = 0x40 + field_id  # Normalize to 0x40+field_id tag byte (e.g. 0x43 for Axle)
-                data_bytes = frame[header_offset + 1 : -3] if len(frame) >= (header_offset + 4) else frame[header_offset + 1 : -1]
-            elif tag_byte in (0x40, 0x00):  # Tag EPC
-                data_bytes = frame[header_offset : -3] if len(frame) >= (header_offset + 4) else frame[header_offset : -1]
+                payload_start = header_offset + 1
+
+                # Exact extraction using length byte:
+                if length_byte > 0:
+                    if length_byte == len(frame) - 4:  # LEN includes TAG + FIELD_ID + PAYLOAD + CRC
+                        payload_len = max(0, length_byte - 4)
+                    elif length_byte == len(frame) - 6:  # LEN includes CMD + FIELD_ID + PAYLOAD
+                        payload_len = max(0, length_byte - 2)
+                    elif length_byte <= (len(frame) - 1 - payload_start):
+                        payload_len = length_byte
+                    else:
+                        payload_len = max(0, len(frame) - 3 - payload_start) if len(frame) >= (payload_start + 3) else max(0, len(frame) - 1 - payload_start)
+                    data_bytes = frame[payload_start : payload_start + payload_len]
+                else:
+                    data_bytes = frame[payload_start : -3] if len(frame) >= (payload_start + 3) else frame[payload_start : -1]
+
             else:
-                data_bytes = frame[header_offset : -3] if len(frame) >= (header_offset + 4) else frame[header_offset : -1]
+                payload_start = header_offset
+                if length_byte > 0:
+                    if length_byte == len(frame) - 4:  # LEN includes TAG + PAYLOAD + CRC (e.g. 24 EF <LEN> 40 <DATA> <CRC> 23)
+                        payload_len = max(0, length_byte - 3)
+                    elif length_byte == len(frame) - 6:  # LEN includes TAG + PAYLOAD (followed by 2 CRC bytes before 23)
+                        payload_len = max(0, length_byte - 1)
+                    elif length_byte <= (len(frame) - 1 - payload_start):
+                        # LEN specifies exact payload byte length
+                        payload_len = length_byte
+                    else:
+                        payload_len = max(0, len(frame) - 3 - payload_start) if len(frame) >= (payload_start + 3) else max(0, len(frame) - 1 - payload_start)
+                    data_bytes = frame[payload_start : payload_start + payload_len]
+                else:
+                    data_bytes = frame[payload_start : -3] if len(frame) >= (payload_start + 3) else frame[payload_start : -1]
 
             if tag_byte in (0x41, 0x42, 0x44, 0x01, 0x02, 0x04):
                 clean_payload_bytes = data_bytes.rstrip(b"\x00\x20\r\n ")
@@ -248,9 +286,27 @@ class RFIDApp:
                 var_name = "tag_id"
                 field_label = "Tag ID"
                 conv_type = "hex as it is"
-                decoded_val = data_bytes.hex().upper()
+
+                # Check if data_bytes is ASCII hex representation or raw binary bytes
+                is_ascii_hex = False
+                try:
+                    ascii_str = data_bytes.decode("ascii").strip()
+                    if ascii_str and all(c in "0123456789ABCDEFabcdef" for c in ascii_str):
+                        decoded_val = ascii_str.upper()
+                        is_ascii_hex = True
+                except Exception:
+                    pass
+
+                if not is_ascii_hex:
+                    decoded_val = data_bytes.hex().upper()
+
+                # Remove last 2 characters from response and keep exact 24 characters
+                if len(decoded_val) > 24:
+                    decoded_val = decoded_val[:-2]
                 if len(decoded_val) > 24:
                     decoded_val = decoded_val[:24]
+
+                payload_hex_spaced = " ".join([decoded_val[i : i + 2] for i in range(0, len(decoded_val), 2)])
 
             elif tag_byte in (0x41, 0x01):  # Serial Reader Number (0x01) -> Alphanumeric
                 param_id = 0x01
@@ -308,15 +364,16 @@ class RFIDApp:
                     pending_info = self.tag_form_comp.pending_requests.pop(param_id)
                     cmd_sent = pending_info.get("Command Sent", "")
                     op_type = pending_info.get("Operation", "Read")
+                    on_success_cb = pending_info.get("on_success")
 
                     # 1. Update UI Entry Box immediately
                     self.tag_form_comp.set_field_value(var_name, decoded_val)
 
-                    # 2. Display PASS Card with positive response payload hex
-                    self.comm_panel_comp.show_pass(payload_hex_spaced)
+                    # 2. Display PASS Card with decoded positive response matching the input field
+                    self.comm_panel_comp.show_pass(decoded_val)
 
                     # 3. Log clean text line in console window
-                    write_log(f"UART RX ({field_label}): {decoded_val} [Response: {payload_hex_spaced}]", log_console)
+                    write_log(f"{medium} RX ({field_label}): {decoded_val} [Response: {payload_hex_spaced}]", log_console)
 
                     # 4. Save SINGLE completed JSON entry with BOTH Command Sent and Response Received
                     log_console.append_json(
@@ -327,6 +384,12 @@ class RFIDApp:
                         conversion=conv_type,
                         medium=medium,
                     )
+
+                    if callable(on_success_cb):
+                        try:
+                            on_success_cb(decoded_val)
+                        except Exception:
+                            pass
                 else:
                     # Late response arrived after 5-second timeout -> ignore and preserve NO RESPONSE status
                     write_log(
@@ -339,7 +402,7 @@ class RFIDApp:
             write_log(f"Error parsing response frame: {e}", log_console)
 
     def update_gui(self):
-        """Optimized GUI event loop processing both full 24EF...23 and direct compact <LEN><TAG>...23 UART frames."""
+        """Optimized GUI event loop extracting frames strictly using expected length and trailer '#'."""
         batch = self.reader.get_raw_batch(max_items=30)
         for raw in batch:
             self.rx_buffer.extend(raw)
@@ -348,28 +411,74 @@ class RFIDApp:
         if len(self.rx_buffer) > 8192:
             del self.rx_buffer[:-2048]
 
-        # Parse framed UART packets ending with '#' (0x23)
-        while True:
-            try:
-                end_idx = self.rx_buffer.index(0x23)  # Find frame trailer '#'
-            except ValueError:
-                break
+        while len(self.rx_buffer) >= 5:
+            # Drop any leading garbage before '$' (0x24) if '$' exists
+            if 0x24 in self.rx_buffer:
+                start_idx = self.rx_buffer.index(0x24)
+                if start_idx > 0:
+                    del self.rx_buffer[:start_idx]
 
-            raw_chunk = bytes(self.rx_buffer[: end_idx + 1])
-            del self.rx_buffer[: end_idx + 1]
+            # Case A: Full Binary Frame starting with '$' (0x24)
+            if len(self.rx_buffer) >= 5 and self.rx_buffer[0] == 0x24:
+                length_byte = self.rx_buffer[2]
+                frame_found = False
 
-            if not raw_chunk:
-                continue
+                # Candidate expected lengths based on length_byte:
+                # 1) length_byte includes TAG + PAYLOAD + CRC (e.g. 24 EF <LEN> 40 <DATA> <CRC> 23 -> LEN + 4)
+                # 2) length_byte includes CMD + FIELD_ID + PAYLOAD (followed by 2 CRC bytes + 23 -> LEN + 6)
+                # 3) length_byte is exact PAYLOAD length (e.g. 24 EF <LEN> 40 <DATA> <CRC> 23 -> LEN + 6 or LEN + 7)
+                # 4) length_byte is exact PAYLOAD length without CRC (e.g. 24 EF <LEN> 40 <DATA> 23 -> LEN + 4 or LEN + 5)
+                candidate_lengths = [
+                    length_byte + 4,
+                    length_byte + 6,
+                    length_byte + 5,
+                    length_byte + 7,
+                ]
 
-            # Case A: Frame contains '$' (0x24) -> Full Binary Frame (e.g. 24 EF ...)
-            if 0x24 in raw_chunk:
-                start_idx = raw_chunk.index(0x24)
-                frame = raw_chunk[start_idx:]
-                if len(frame) >= 5:
-                    self._parse_uart_response(frame)
+                for exp_len in candidate_lengths:
+                    if exp_len >= 5 and len(self.rx_buffer) >= exp_len:
+                        if self.rx_buffer[exp_len - 1] == 0x23:
+                            frame = bytes(self.rx_buffer[:exp_len])
+                            del self.rx_buffer[:exp_len]
+                            self._parse_uart_response(frame)
+                            frame_found = True
+                            break
+
+                if frame_found:
+                    continue
+
+                # If minimum candidate length has not arrived yet, wait for remaining bytes
+                min_exp = min(candidate_lengths) if candidate_lengths else 5
+                if len(self.rx_buffer) < min_exp:
+                    break
+
+                # If buffer has accumulated past max expected length and no trailer matched at expected positions:
+                max_exp = max(candidate_lengths) if candidate_lengths else 50
+                if len(self.rx_buffer) > max_exp:
+                    # Check if there is another '$' downstream to resync
+                    try:
+                        next_start = self.rx_buffer.index(0x24, 1)
+                        del self.rx_buffer[:next_start]
+                        continue
+                    except ValueError:
+                        # Fallback to finding next 0x23 to discard invalid chunk
+                        try:
+                            end_idx = self.rx_buffer.index(0x23)
+                            del self.rx_buffer[:end_idx + 1]
+                            continue
+                        except ValueError:
+                            break
+                else:
+                    break
 
             # Case B: ASCII hex text string frame (e.g. b"24EF...23" or b"0469...23")
-            elif b"24" in raw_chunk or b"EF" in raw_chunk:
+            elif (len(self.rx_buffer) >= 4 and (self.rx_buffer[:2] == b"24" or self.rx_buffer[:2] == b"EF")) or (b"24" in self.rx_buffer or b"EF" in self.rx_buffer):
+                try:
+                    end_idx = self.rx_buffer.index(0x23)  # Find '#'
+                except ValueError:
+                    break
+                raw_chunk = bytes(self.rx_buffer[: end_idx + 1])
+                del self.rx_buffer[: end_idx + 1]
                 try:
                     ascii_str = raw_chunk.decode("ascii", errors="ignore").replace(" ", "").strip()
                     raw_binary_frame = bytes.fromhex(ascii_str)
@@ -379,8 +488,32 @@ class RFIDApp:
                     pass
 
             # Case C: Direct Compact Binary Frame without '$' (e.g. 04 69 03 00 14 25 80 23)
-            elif len(raw_chunk) >= 5:
-                self._parse_uart_response(raw_chunk)
+            elif len(self.rx_buffer) >= 5:
+                length_byte = self.rx_buffer[0]
+                frame_found = False
+                candidate_lengths = [length_byte + 1, length_byte + 2, length_byte + 3, length_byte + 4]
+
+                for exp_len in candidate_lengths:
+                    if exp_len >= 5 and len(self.rx_buffer) >= exp_len:
+                        if self.rx_buffer[exp_len - 1] == 0x23:
+                            frame = bytes(self.rx_buffer[:exp_len])
+                            del self.rx_buffer[:exp_len]
+                            self._parse_uart_response(frame)
+                            frame_found = True
+                            break
+
+                if frame_found:
+                    continue
+
+                try:
+                    end_idx = self.rx_buffer.index(0x23)
+                    frame = bytes(self.rx_buffer[: end_idx + 1])
+                    del self.rx_buffer[: end_idx + 1]
+                    self._parse_uart_response(frame)
+                except ValueError:
+                    break
+            else:
+                break
 
         self.root.after(50, self.update_gui)
 

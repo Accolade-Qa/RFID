@@ -36,6 +36,6 @@ ERROR_CODES = {
     0x04: "AEPL_RFID_RESULT_INVALID_LENGTH: Frame length does not match expected value.",
     0x05: "AEPL_RFID_RESULT_CRC_ERROR: CRC verification failed.",
     0x06: "AEPL_RFID_RESULT_UNSUPPORTED_COMMAND: Requested Command ID is not supported.",
-    0x07: "AEPL_RFID_RESULT_DATA_UNAVAILABLE: Requested parameter is unavailable.",
+    0x07: "No Tag / Data Unavailable",
     0x08: "AEPL_RFID_RESULT_TX_FAILED: Failed to transmit response frame.",
 }

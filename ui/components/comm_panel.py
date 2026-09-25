@@ -105,6 +105,7 @@ class CommPanelFrame:
                 textvariable=variable,
                 values=values,
                 state="readonly",
+                # pyrefly: ignore [unexpected-keyword]
                 bootstyle="info",
                 width=13,
             )
@@ -125,6 +126,7 @@ class CommPanelFrame:
             button_frame_comm,
             text="Connect",
             command=self.connect_reader,
+            # pyrefly: ignore [unexpected-keyword]
             bootstyle="success",
             width=11,
         )
@@ -134,6 +136,7 @@ class CommPanelFrame:
             button_frame_comm,
             text="Disconnect",
             command=self.disconnect_reader,
+            # pyrefly: ignore [unexpected-keyword]
             bootstyle="danger",
             state="disabled",
             width=11,
@@ -144,13 +147,22 @@ class CommPanelFrame:
             button_frame_comm,
             text="CAN IDs",
             command=self.open_can_id_dialog,
-            bootstyle="secondary-outline",
+            # pyrefly: ignore [unexpected-keyword]
+            bootstyle="primary",
             width=10,
         )
-        self.can_id_button.pack(side="left")
+        if self.medium_var.get() == "CAN":
+            self.can_id_button.pack(side="left")
 
     def _on_medium_selected(self, event=None):
         medium = self.medium_var.get()
+        # Show CAN IDs button only for CAN
+        if medium == "CAN":
+            if not self.can_id_button.winfo_manager():
+                self.can_id_button.pack(side="left")
+        else:
+            if self.can_id_button.winfo_manager():
+                self.can_id_button.pack_forget()
         if medium == "CAN":
             if self.port_combobox:
                 self.port_combobox.configure(values=CAN_CHANNELS)
@@ -202,6 +214,7 @@ class CommPanelFrame:
         rx_entry.grid(row=1, column=1, sticky="w", padx=10, pady=4)
 
         ext_var = tk.BooleanVar(value=getattr(self.reader, 'is_extended_id', CAN_IS_EXTENDED_ID))
+        # pyrefly: ignore [unexpected-keyword]
         ttkb.Checkbutton(grid_frame, text="Extended 29-bit CAN ID", variable=ext_var, bootstyle="info-square-toggle").grid(
             row=2, column=0, columnspan=2, sticky="w", pady=6
         )
@@ -255,6 +268,7 @@ class CommPanelFrame:
             except ValueError:
                 messagebox.showerror("Invalid Input", "Please enter valid Hexadecimal values for CAN IDs (e.g. 0x7E0 or 7E0).")
 
+        # pyrefly: ignore [unexpected-keyword]
         ttkb.Button(container, text="Apply CAN Settings", command=_save_can_ids, bootstyle="success").pack(side="right", pady=15)
 
     def _build_diag_card(self):
@@ -352,13 +366,13 @@ class CommPanelFrame:
             fg="#E2E8F0",
         )
 
-    def show_pass(self, payload_hex: str):
+    def show_pass(self, value_text: str):
         self.accent_bar.configure(bg="#10B981")
         self.draw_icon("pass")
         self.title_label.configure(text="PASS", fg="#10B981")
-        clean_payload = payload_hex.strip()
+        clean_val = str(value_text).strip()
         self.subtext_label.configure(
-            text=f"Positive response: {clean_payload}",
+            text=f"Positive response: {clean_val}",
             fg="#E2E8F0",
         )
 

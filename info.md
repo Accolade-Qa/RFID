@@ -437,7 +437,7 @@ When a command fails on hardware, the reader returns `24 EF <LEN> 7F <FAILED_CMD
 ---
 
 ### Q30: What are the numerical bounds for decimal Gross Weight values?
-- Supports decimal weights up to **42,949,672.95 kg** (representing the maximum 32-bit unsigned integer `4294967295` when scaled by 100).
+- Supports decimal weights up to **4,29,49,67,295 kg** (representing the maximum 32-bit unsigned integer `4294967295` when scaled by 100).
 
 ---
 
