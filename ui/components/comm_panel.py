@@ -366,13 +366,13 @@ class CommPanelFrame:
             fg="#E2E8F0",
         )
 
-    def show_pass(self, payload_hex: str):
+    def show_pass(self, value_text: str):
         self.accent_bar.configure(bg="#10B981")
         self.draw_icon("pass")
         self.title_label.configure(text="PASS", fg="#10B981")
-        clean_payload = payload_hex.strip()
+        clean_val = str(value_text).strip()
         self.subtext_label.configure(
-            text=f"Positive response: {clean_payload}",
+            text=f"Positive response: {clean_val}",
             fg="#E2E8F0",
         )
 
