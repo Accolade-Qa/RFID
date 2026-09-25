@@ -1,10 +1,13 @@
 from validation.validators import (
+    REL_VERSION_PLACEHOLDER,
     TAG_ID_PLACEHOLDER,
     SERIAL_PLACEHOLDER,
     VIN_PLACEHOLDER,
     AXLE_PLACEHOLDER,
     GVW_PLACEHOLDER,
     REGISTRATION_PLACEHOLDER,
+    is_rel_version_valid,
+    validate_rel_version_entry,
     is_tag_id_valid,
     validate_tag_id_entry,
     is_serial_valid,
@@ -19,12 +22,15 @@ from validation.validators import (
 )
 
 __all__ = [
+    "REL_VERSION_PLACEHOLDER",
     "TAG_ID_PLACEHOLDER",
     "SERIAL_PLACEHOLDER",
     "VIN_PLACEHOLDER",
     "AXLE_PLACEHOLDER",
     "GVW_PLACEHOLDER",
     "REGISTRATION_PLACEHOLDER",
+    "is_rel_version_valid",
+    "validate_rel_version_entry",
     "is_tag_id_valid",
     "validate_tag_id_entry",
     "is_serial_valid",
