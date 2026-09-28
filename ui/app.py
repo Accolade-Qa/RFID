@@ -15,6 +15,7 @@ from config import (
 )
 from communication import SerialReader, CANReader
 from logger import write_log
+from validation.validators import normalize_rel_version_value
 from ui.components.header import build_header_frame
 from ui.components.tag_form import TagFormFrame
 from ui.components.comm_panel import CommPanelFrame
@@ -90,17 +91,40 @@ class RFIDApp:
 
     def _configure_styles(self):
         style = ttkb.Style(theme="darkly")
-        style.configure("Card.TFrame", background="#1f2937")
-        style.configure("Header.TFrame", background="#111827")
-        style.configure("Title.TLabel", font=("Segoe UI", 22, "bold"), foreground="#F8FAFC")
-        style.configure("Section.TLabel", font=("Segoe UI", 11, "bold"), foreground="#E2E8F0")
-        style.configure("Field.TLabel", font=("Segoe UI", 10), foreground="#E2E8F0")
-        style.configure("Caption.TLabel", font=("Segoe UI", 9), foreground="#94a3b8")
 
-        # Rounded styling for Entry boxes, Buttons, and Comboboxes
-        style.configure("TEntry", padding=(8, 6), borderwidth=1, relief="flat")
+        # Uniform dark utility palette across the whole app
+        dark_bg = "#111827"
+        panel_bg = "#1F2937"
+        panel_alt = "#0F172A"
+        text_fg = "#F8FAFC"
+        soft_fg = "#E2E8F0"
+
+        style.configure("TFrame", background=panel_bg)
+        style.configure("TLabel", background=panel_bg, foreground=text_fg)
+        style.configure("TEntry", background=panel_alt, foreground=text_fg, fieldbackground=panel_alt, padding=(8, 6), borderwidth=1, relief="flat")
+        style.configure("TCombobox", fieldbackground=panel_alt, background=panel_alt, foreground=text_fg, padding=(6, 5))
         style.configure("TButton", padding=(10, 6), borderwidth=1, relief="flat")
-        style.configure("TCombobox", padding=(6, 5))
+        style.configure("TCheckbutton", background=panel_bg, foreground=text_fg)
+        style.configure("TLabelframe", background=panel_bg)
+        style.configure("TLabelframe.Label", background=panel_bg, foreground=text_fg)
+
+        style.configure("Card.TFrame", background=panel_bg)
+        style.configure("Header.TFrame", background=dark_bg)
+        style.configure("Title.TLabel", font=("Segoe UI", 22, "bold"), foreground=text_fg, background=dark_bg)
+        style.configure("Section.TLabel", font=("Segoe UI", 11, "bold"), foreground=soft_fg, background=panel_bg)
+        style.configure("Field.TLabel", font=("Segoe UI", 10), foreground=soft_fg, background=panel_bg)
+        style.configure("Caption.TLabel", font=("Segoe UI", 9), foreground="#94a3b8", background=panel_bg)
+
+        style.map(
+            "TEntry",
+            fieldbackground=[("readonly", panel_alt), ("!readonly", panel_alt)],
+            foreground=[("disabled", "#94a3b8"), ("!disabled", text_fg)],
+        )
+        style.map(
+            "TCombobox",
+            fieldbackground=[("readonly", panel_alt), ("!readonly", panel_alt)],
+            foreground=[("disabled", "#94a3b8"), ("!disabled", text_fg)],
+        )
 
     def _on_command_timeout(self, field_label: str):
         self.comm_panel_comp.show_timeout(field_label)
@@ -358,13 +382,14 @@ class RFIDApp:
                 conv_type = "hex as it is"
                 decoded_val = data_bytes.hex().upper()
 
-            elif tag_byte in (0x47, 0x07):  # Release Version (0x07) -> Printable text or hex fallback
+            elif tag_byte in (0x47, 0x07, 0x63):  # Release Version (some firmware tags this as 0x63, not 0x47)
                 param_id = 0x07
                 var_name = "rel_version"
                 field_label = "Rel Version"
                 conv_type = "alphanumeric"
                 try:
                     decoded_val = data_bytes.decode("ascii", errors="ignore").strip()
+                    decoded_val = normalize_rel_version_value(decoded_val)
                     if not decoded_val:
                         decoded_val = data_bytes.hex().upper()
                 except Exception:

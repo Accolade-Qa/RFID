@@ -20,10 +20,18 @@ def compute_crc16_ccitt_false(data: bytes) -> int:
     return crc & 0xFFFF
 
 def aepl_rfid_calculate_crc16(data: bytes, length: int) -> int:
+    '''
+        #define AEPL_RFID_CRC_INITIAL_VALUE             (0xFFFFU)
+        #define AEPL_RFID_CRC_POLYNOMIAL                (0x1021U)
+        #define AEPL_RFID_CRC_MSB_MASK                  (0x8000U)
+        #define AEPL_RFID_CRC_START_INDEX                0U
+    '''
+
     CRC_INITIAL_VALUE = 0xFFFF
     CRC_START_INDEX = 0
     CRC_MSB_MASK = 0x8000
     CRC_POLYNOMIAL = 0x1021
+
 
     crc = CRC_INITIAL_VALUE
 

@@ -9,10 +9,18 @@ GVW_PLACEHOLDER = "(Decimal: e.g. 45000.50)"
 REGISTRATION_PLACEHOLDER = "(Alphanumeric: Max 12 Characters)"
 
 
+def normalize_rel_version_value(value: str) -> str:
+    cleaned = (value or "").strip()
+    if cleaned.startswith("818") and cleaned[3:4] == ".":
+        return cleaned[1:]
+    return cleaned
+
+
 def is_rel_version_valid(value: str) -> bool:
+    normalized = normalize_rel_version_value(value)
     return (
-        len(value) <= 26
-        and value.replace(".", "").replace("-", "").replace("_", "").isalnum()
+        len(normalized) <= 26
+        and normalized.replace(".", "").replace("-", "").replace("_", "").isalnum()
     )
 
 
