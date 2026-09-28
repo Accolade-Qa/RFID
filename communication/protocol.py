@@ -118,12 +118,12 @@ def build_write_transmission_frame(field_name: str, input_value: str) -> tuple[b
     body = bytes([SET_CMD_ID, field_id]) + payload
     length = len(body)
 
-    # Compute CRC-16/CCITT-FALSE over body
-    # crc_val = compute_crc16_ccitt_false(body)
+    # CRC is calculated over the exact bytes before the CRC field.
+    # For the AEPL protocol this is the body bytes only: 29 + FIELD_ID + PAYLOAD
     crc_val = aepl_rfid_calculate_crc16(body, length)
     crc_bytes = crc_to_bytes(crc_val, big_endian=True)
 
-    # Complete frame
+    # Complete frame: 24 11 <LEN> 29 <FIELD_ID> <PAYLOAD> <CRC_H> <CRC_L> 23
     frame = bytes([HEADER, ECU_ID_VLDT, length]) + body + crc_bytes + bytes([TRAILER])
     frame_hex_spaced = frame.hex(" ").upper()
 
