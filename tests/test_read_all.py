@@ -31,9 +31,19 @@ class DummyLogConsole:
         pass
 
 class TestReadAllRetry(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.root = tk.Tk()
+        cls.root.withdraw()
+
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            cls.root.destroy()
+        except Exception:
+            pass
+
     def setUp(self):
-        self.root = tk.Tk()
-        self.root.withdraw()
         self.reader = DummyReader()
         self.tag_form = TagFormFrame(
             parent_frame=self.root,
@@ -44,7 +54,6 @@ class TestReadAllRetry(unittest.TestCase):
 
     def tearDown(self):
         self.tag_form.clear_pending_requests()
-        self.root.destroy()
 
     def test_read_all_retry_on_failure(self):
         import time
@@ -161,12 +170,12 @@ class TestReadAllRetry(unittest.TestCase):
         time.sleep(0.3)
         self.root.update()
 
-    def test_read_all_sequence_stops_at_gvw_and_skips_cert(self):
+    def test_read_all_sequence_skips_cert(self):
         import time
         self.tag_form.read_all_fields()
 
-        # Iterate through all 6 fields in READ_ALL_FIELDS
-        expected_params = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05]
+        # Iterate through all 7 fields in READ_ALL_FIELDS (tag_id, serial, vin, axle, registration, gvw, rel_version)
+        expected_params = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x07]
         for idx, param in enumerate(expected_params):
             self.assertEqual(len(self.reader.written_bytes), idx + 1)
             self.assertIn(param, self.tag_form.pending_requests)
@@ -176,8 +185,8 @@ class TestReadAllRetry(unittest.TestCase):
             time.sleep(0.6)
             self.root.update()
 
-        # Sequence should be completed after GVW (0x05) without requesting TA Certification (0x06)
-        self.assertEqual(len(self.reader.written_bytes), 6)
+        # Sequence should be completed after rel_version (0x07) without requesting TA Certification (0x06)
+        self.assertEqual(len(self.reader.written_bytes), 7)
         self.assertFalse(self.tag_form._read_all_active)
         self.assertNotIn(0x06, self.tag_form.pending_requests)
 

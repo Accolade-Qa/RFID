@@ -14,8 +14,7 @@ REGISTRATION_PLACEHOLDER = "(Alphanumeric: Max 12 Characters)"
 
 def normalize_rel_version_value(value: str) -> str:
     cleaned = (value or "").strip()
-    # want to add 2 digit version number
-    if cleaned.startswith(re.compile("18")) and cleaned[3:4] == ".":
+    if cleaned.startswith("818."):
         return cleaned[1:]
     return cleaned
 
