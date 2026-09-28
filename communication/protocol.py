@@ -2,10 +2,10 @@
 
 from communication.crc import aepl_rfid_calculate_crc16, crc_to_bytes
 
-HEADER = 0x24       # '$'
-TRAILER = 0x23      # '#'
+HEADER = 0x24  # '$'
+TRAILER = 0x23  # '#'
 ECU_ID_VLDT = 0x11  # Sender ID for VLDT requests
-SET_CMD_ID = 0x29   # Transmission ID for Write SET commands
+SET_CMD_ID = 0x29  # Transmission ID for Write SET commands
 
 FIELD_SPECS = {
     "serial": {
@@ -67,64 +67,107 @@ FIELD_SPECS = {
 }
 
 
-def build_write_transmission_frame(field_name: str, input_value: str) -> tuple[bytes, str, dict]:
-    """
-    Build a complete 0x29 SET Transmission Frame with CRC-16/CCITT-FALSE calculation.
-    
-    Frame structure:
-    24 11 <LEN> 29 <FIELD_ID> <DATA_BYTES> <RESERVE_BYTES> <CRC_H> <CRC_L> 23
-    """
+def build_write_transmission_frame(
+    field_name: str, input_value: str
+) -> tuple[bytes, str, dict]:
+
     if field_name not in FIELD_SPECS:
         raise ValueError(f"Unknown field name: {field_name}")
 
     spec = FIELD_SPECS[field_name]
+
     field_id = spec["field_id"]
     dtype = spec["dtype"]
     data_len = spec["data_len"]
     reserve_len = spec.get("reserve_len", 0)
 
-    # Encode payload bytes
+    # ---------------------------------------------------------
+    # 1. Encode DATA_BYTES
+    # ---------------------------------------------------------
     clean_val = input_value.strip()
+
     if dtype == "string":
         raw = clean_val.encode("ascii", errors="ignore")
+
         if len(raw) > data_len:
             raw = raw[:data_len]
+
         payload = raw.ljust(data_len, b" ")
+
     elif dtype in ("uint", "decimal"):
         try:
             val_float = float(clean_val)
             val_int = int(round(val_float))
         except ValueError:
             val_int = 0
+
         payload = val_int.to_bytes(data_len, "big")
+
     elif dtype == "hex":
         compact = clean_val.replace(" ", "")
+
         try:
             payload = bytes.fromhex(compact)
         except ValueError:
             payload = b"\x00" * data_len
+
         if len(payload) < data_len:
             payload = payload.ljust(data_len, b"\x00")
         elif len(payload) > data_len:
             payload = payload[:data_len]
+
     else:
         payload = b"\x00" * data_len
 
-    # Add reserve bytes if required (e.g. Serial Reader Number 0x01)
+    # ---------------------------------------------------------
+    # 2. Add RESERVE_BYTES
+    # ---------------------------------------------------------
     if reserve_len > 0:
         payload += b"\x00" * reserve_len
 
-    # Body: 0x29 + Field_ID + Payload
-    body = bytes([HEADER, ECU_ID_VLDT, length, SET_CMD_ID, field_id]) + payload
-    b_len = len(body[1:])  # Length excludes HEADER byte
+    # ---------------------------------------------------------
+    # 3. Build command/data portion
+    #
+    #    29 FIELD_ID DATA RESERVE
+    # ---------------------------------------------------------
+    command_body = bytes([SET_CMD_ID, field_id]) + payload
 
-    # CRC is calculated over the exact bytes before the CRC field.
-    # For the AEPL protocol this is the body bytes only: 29 + FIELD_ID + PAYLOAD
-    crc_val = aepl_rfid_calculate_crc16(body, b_len)
+    # Protocol LEN represents:
+    #
+    #    29 + FIELD_ID + DATA + RESERVE
+    #
+    length = len(command_body)
+
+    # ---------------------------------------------------------
+    # 4. Build buffer BEFORE CRC
+    #
+    #    24 11 LEN 29 FIELD_ID DATA RESERVE
+    # ---------------------------------------------------------
+    body = bytes([HEADER, ECU_ID_VLDT, length]) + command_body
+
+    # ---------------------------------------------------------
+    # 5. Calculate CRC
+    #
+    # Skip body[0] = 24
+    #
+    # CRC input:
+    #
+    #    11 LEN 29 FIELD_ID DATA RESERVE
+    # ---------------------------------------------------------
+    crc_val = aepl_rfid_calculate_crc16(body, len(body))
+
+    # ---------------------------------------------------------
+    # 6. Convert CRC to bytes
+    # ---------------------------------------------------------
     crc_bytes = crc_to_bytes(crc_val, big_endian=True)
 
-    # Complete frame: 24 11 <LEN> 29 <FIELD_ID> <PAYLOAD> <CRC_H> <CRC_L> 23
-    frame = bytes([HEADER, ECU_ID_VLDT, length]) + body + crc_bytes + bytes([TRAILER])
+    # ---------------------------------------------------------
+    # 7. Append CRC and TRAILER
+    #
+    #    24 11 LEN 29 FIELD_ID DATA RESERVE CRC_H CRC_L 23
+    # ---------------------------------------------------------
+    frame = body + crc_bytes + bytes([TRAILER])
+
     frame_hex_spaced = frame.hex(" ").upper()
 
     metadata = {
