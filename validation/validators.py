@@ -1,6 +1,9 @@
 """Validation functions for RFID UI field entries."""
 
-REL_VERSION_PLACEHOLDER = "1.0.0_REL18_R_MTBD.bin"
+import re
+
+
+REL_VERSION_PLACEHOLDER = "1.0.0_REL18_R"
 TAG_ID_PLACEHOLDER = "(Alphanumeric: Max 24 Characters)"
 SERIAL_PLACEHOLDER = "(Alphanumeric: Max 16 characters)"
 VIN_PLACEHOLDER = "(Alphanumeric: Max 17 Characters)"
@@ -11,7 +14,8 @@ REGISTRATION_PLACEHOLDER = "(Alphanumeric: Max 12 Characters)"
 
 def normalize_rel_version_value(value: str) -> str:
     cleaned = (value or "").strip()
-    if cleaned.startswith("818") and cleaned[3:4] == ".":
+    # want to add 2 digit version number
+    if cleaned.startswith(re.compile("18")) and cleaned[3:4] == ".":
         return cleaned[1:]
     return cleaned
 
@@ -19,7 +23,7 @@ def normalize_rel_version_value(value: str) -> str:
 def is_rel_version_valid(value: str) -> bool:
     normalized = normalize_rel_version_value(value)
     return (
-        len(normalized) <= 26
+        len(normalized) <= 20
         and normalized.replace(".", "").replace("-", "").replace("_", "").isalnum()
     )
 
