@@ -403,6 +403,32 @@ class RFIDApp:
                     op_type = pending_info.get("Operation", "Read")
                     on_success_cb = pending_info.get("on_success")
 
+                    clean_value = decoded_val.strip()
+                    is_no_data = not clean_value or not clean_value.strip("0")
+                    if op_type == "Read" and is_no_data:
+                        self.tag_form_comp.set_field_value(var_name, "")
+                        self.comm_panel_comp.show_fail(description="No ID/data found")
+                        write_log(
+                            f"{medium} RX ({field_label}): No ID/data found [Response: {payload_hex_spaced}]",
+                            log_console,
+                        )
+                        log_console.append_json(
+                            name=field_label,
+                            operation=op_type,
+                            command_sent=cmd_sent,
+                            response_received=frame_hex,
+                            conversion=conv_type,
+                            medium=medium,
+                        )
+
+                        on_failure_cb = pending_info.get("on_failure")
+                        if callable(on_failure_cb):
+                            try:
+                                on_failure_cb("NO_DATA")
+                            except Exception:
+                                pass
+                        return
+
                     # 1. Update UI Entry Box immediately
                     self.tag_form_comp.set_field_value(var_name, decoded_val)
 

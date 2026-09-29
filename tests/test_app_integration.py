@@ -127,3 +127,55 @@ class DummyLogConsole:
 
         app._on_medium_change("UART")
         assert app.reader == app.serial_reader
+
+
+class TestNoDataResponses:
+    def setup_method(self):
+        self.app = RFIDApp()
+        self.app.root.withdraw()
+        self.log_mock = DummyLogConsole()
+        self.app.log_panel_comp.log_console = self.log_mock
+
+    def teardown_method(self):
+        self.app.on_close()
+
+    def test_zero_tag_id_fails_without_populating_field(self):
+        failures = []
+        self.app.tag_form_comp.pending_requests[0x00] = {
+            "req_id": 1,
+            "Name": "Tag ID",
+            "Operation": "Read",
+            "Command Sent": "24 11 01 00 23",
+            "Conversion": "hex as it is",
+            "var_name": "tag_id",
+            "on_failure": failures.append,
+        }
+
+        frame = b"\x24\xEF\x12\x40" + (b"\x00" * 12) + b"\x00\x00\x23"
+        self.app._parse_uart_response(frame)
+
+        assert self.app.tag_form_comp.field_vars["tag_id"].get() == ""
+        assert self.app.comm_panel_comp.title_label.cget("text") == "FAIL"
+        assert "No ID/data found" in self.app.comm_panel_comp.subtext_label.cget("text")
+        assert failures == ["NO_DATA"]
+        assert len(self.log_mock.json_records) == 1
+
+    def test_zero_numeric_data_fails_without_populating_field(self):
+        failures = []
+        self.app.tag_form_comp.pending_requests[0x03] = {
+            "req_id": 2,
+            "Name": "Axle Count",
+            "Operation": "Read",
+            "Command Sent": "24 11 01 03 23",
+            "Conversion": "numerical",
+            "var_name": "axle",
+            "on_failure": failures.append,
+        }
+
+        frame = b"\x24\xEF\x06\x43\x00\x00\x00\x00\x23"
+        self.app._parse_uart_response(frame)
+
+        assert self.app.tag_form_comp.field_vars["axle"].get() == ""
+        assert self.app.comm_panel_comp.title_label.cget("text") == "FAIL"
+        assert "No ID/data found" in self.app.comm_panel_comp.subtext_label.cget("text")
+        assert failures == ["NO_DATA"]
