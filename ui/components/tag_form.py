@@ -292,6 +292,8 @@ class TagFormFrame:
         self.root.after(5000, lambda p_id=param_id, r_id=req_id, name=field_label, op=operation: self._handle_request_timeout(p_id, r_id, name, op))
 
     def _get_medium_name(self) -> str:
+        if hasattr(self.reader, "bustype") or "CAN" in self.reader.__class__.__name__.upper():
+            return "CAN"
         return "UART"
 
     def _handle_request_timeout(self, param_id: int, req_id: int, field_label: str, operation: str):

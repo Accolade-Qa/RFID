@@ -4,9 +4,16 @@ import ttkbootstrap as ttkb
 from config import (
     PORT,
     BAUDRATE,
+    CAN_CHANNEL,
+    CAN_BUS_TYPE,
+    CAN_BITRATE,
+    CAN_DEFAULT_TX_ID,
+    CAN_DEFAULT_RX_ID,
+    CAN_IS_EXTENDED_ID,
+    CAN_ID_MAP,
     ERROR_CODES,
 )
-from communication import SerialReader
+from communication import SerialReader, CANReader
 from logger import write_log
 from validation.validators import normalize_rel_version_value
 from ui.components.header import build_header_frame
@@ -29,7 +36,17 @@ class RFIDApp:
         self._configure_styles()
         self._set_app_icon()
 
-        self.reader = SerialReader(PORT, BAUDRATE)
+        self.serial_reader = SerialReader(PORT, BAUDRATE)
+        self.can_reader = CANReader(
+            channel=CAN_CHANNEL,
+            bustype=CAN_BUS_TYPE,
+            bitrate=CAN_BITRATE,
+            default_tx_id=CAN_DEFAULT_TX_ID,
+            default_rx_id=CAN_DEFAULT_RX_ID,
+            is_extended_id=CAN_IS_EXTENDED_ID,
+            id_map=CAN_ID_MAP,
+        )
+        self.reader = self.serial_reader
         self.logging_enabled = False
         self.rx_buffer = bytearray()
 
@@ -56,6 +73,7 @@ class RFIDApp:
             self.reader,
             lambda: self.log_panel_comp.log_console,
             self._on_connection_change,
+            on_medium_change_cb=self._on_medium_change,
         )
 
         # Tag form component
@@ -124,6 +142,22 @@ class RFIDApp:
             self.tag_form_comp.clear_pending_requests()
             self.comm_panel_comp.show_disconnected()
 
+    def _on_medium_change(self, medium: str):
+        if self.reader and self.reader.is_connected():
+            self.reader.disconnect()
+
+        self.tag_form_comp.clear_pending_requests()
+        if medium == "CAN":
+            self.reader = self.can_reader
+        else:
+            self.reader = self.serial_reader
+
+        self.comm_panel_comp.reader = self.reader
+        self.tag_form_comp.reader = self.reader
+        self.reader.set_disconnect_callback(self.comm_panel_comp._on_async_disconnect)
+        self.comm_panel_comp.show_disconnected()
+        write_log(f"Switched communication medium to {medium}", self.log_panel_comp.log_console)
+
     def _bind_events(self):
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
@@ -166,7 +200,7 @@ class RFIDApp:
     def _parse_uart_response(self, frame: bytes):
         """Universal parser for UART response frames (both 24EF...23 and direct <LEN><TAG><FIELD_ID>...23)."""
         log_console = self.log_panel_comp.log_console
-        medium = "UART"
+        medium = self.comm_panel_comp.medium_var.get()
         frame_hex = frame.hex().upper()
 
         try:
@@ -196,11 +230,6 @@ class RFIDApp:
                 if failed_cmd in self.tag_form_comp.pending_requests:
                     pending_info = self.tag_form_comp.pending_requests.pop(failed_cmd)
                     on_failure_cb = pending_info.get("on_failure")
-
-                    if error_code == 0x07 and pending_info.get("Operation") == "Read":
-                        field_name = pending_info.get("var_name")
-                        if field_name:
-                            self.tag_form_comp.set_field_value(field_name, "")
 
                     self.comm_panel_comp.show_fail(error_code=error_code)
                     write_log(f"{medium} RX Negative Response for Cmd 0x{failed_cmd:02X} (Error 0x{error_code:02X}: {ERROR_CODES.get(error_code, 'Error')})", log_console)

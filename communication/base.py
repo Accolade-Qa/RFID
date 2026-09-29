@@ -1,4 +1,4 @@
-"""Abstract base class for hardware communicators."""
+"""Abstract Base Class for hardware communicators (UART Serial, CAN Bus, etc.)."""
 
 from abc import ABC, abstractmethod
 
