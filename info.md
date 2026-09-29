@@ -1,4 +1,4 @@
-# RFID - Comprehensive System Master Guide
+# RFID UART Communicator Guide
 ## ACCOLADE ELECTRONICS PVT LTD
 
 ---
@@ -9,8 +9,7 @@
   - [Component Architecture Diagram](#component-architecture-diagram)
   - [Directory & File Responsibilities](#directory--file-responsibilities)
 - [2. Complete Implemented Feature Matrix & User Manual](#2-complete-implemented-feature-matrix--user-manual)
-  - [Feature 1: Dual Communication Medium (UART & CAN Bus)](#feature-1-dual-communication-medium-uart--can-bus)
-  - [Feature 2: Dynamic CAN ID Mapping & Modal Dialog](#feature-2-dynamic-can-id-mapping--modal-dialog)
+  - [Feature 1: UART Communication](#feature-1-uart-communication)
   - [Feature 3: Non-Blocking Threaded Queue Architecture](#feature-3-non-blocking-threaded-queue-architecture)
   - [Feature 4: Protocol Framing & Checksum](#feature-4-protocol-framing--checksum)
   - [Feature 5: Multi-Field Concurrent Request Tracking & Parameter Mapping](#feature-5-multi-field-concurrent-request-tracking--parameter-mapping)
@@ -18,37 +17,28 @@
   - [Feature 7: Real-Time Input Validation (Alphanumeric, Hex & Decimal)](#feature-7-real-time-input-validation-alphanumeric-hex--decimal)
   - [Feature 8: Diagnostic Result Cards with Zero-Trailing-Space Formatting](#feature-8-diagnostic-result-cards-with-zero-trailing-space-formatting)
   - [Feature 9: UI Control Locking on Connection](#feature-9-ui-control-locking-on-connection)
-  - [Feature 10: Virtual CAN Mode & Built-In RFID Simulator](#feature-10-virtual-can-mode--built-in-rfid-simulator)
+  - [Feature 10: Empty and Missing Data Handling](#feature-10-empty-and-missing-data-handling)
   - [Feature 11: Structured Console & JSON Audit Trail Logging](#feature-11-structured-console--json-audit-trail-logging)
 - [3. Protocol Specification & Frame Formats](#3-protocol-specification--frame-formats)
   - [Request & Response Frame Structures](#request--response-frame-structures)
   - [Field Specifications Table](#field-specifications-table)
   - [Negative Response Error Codes](#negative-response-error-codes)
-- [4. Hardware Setup & CAN Bus Wiring Guide](#4-hardware-setup--can-bus-wiring-guide)
-  - [Supported Adapters & Interfaces](#supported-adapters--interfaces)
-  - [Physical Wiring Diagram & Pinouts](#physical-wiring-diagram--pinouts)
-- [5. Comprehensive Operational, Feature & Technical Q&A (30 Deep Dives)](#5-comprehensive-operational-feature--technical-qa-30-deep-dives)
+- [4. UART Setup](#4-uart-setup)
+- [5. Operational, Feature & Technical Q&A](#5-operational-feature--technical-qa)
   - [Q1: Why was a trailing space added to the Diagnostic status hex response when writing VIN, while ASCII showed without space?](#q1-why-was-a-trailing-space-added-to-the-diagnostic-status-hex-response-when-writing-vin-while-ascii-showed-without-space)
   - [Q2: How does the application work in depth (system architecture & data flow)?](#q2-how-does-the-application-work-in-depth-system-architecture--data-flow)
-  - [Q3: How is CAN bus communication integrated alongside UART?](#q3-how-is-can-bus-communication-integrated-alongside-uart)
-  - [Q4: What physical CAN hardware adapters & wiring are required?](#q4-what-physical-can-hardware-adapters--wiring-are-required)
-  - [Q5: How do I run and test the Virtual CAN setup without hardware?](#q5-how-do-i-run-and-test-the-virtual-can-setup-without-hardware)
-  - [Q6: Why did initial Virtual CAN runs output 'UART RX Timeout' for all fields?](#q6-why-did-initial-virtual-can-runs-output-uart-rx-timeout-for-all-fields)
-  - [Q7: Is this CAN implementation for testing purposes only, or is it 100% production ready?](#q7-is-this-can-implementation-for-testing-purposes-only-or-is-it-100-production-ready)
   - [Q8: How does UI Control Locking work when connected vs. disconnected?](#q8-how-does-ui-control-locking-work-when-connected-vs-disconnected)
   - [Q9: What happens when a Write command is fired, data is written on the tag, but the device returns no response?](#q9-what-happens-when-a-write-command-is-fired-data-is-written-on-the-tag-but-the-device-returns-no-response)
   - [Q10: What if a command is stuck in pending requests and never gives a response?](#q10-what-if-a-command-is-stuck-in-pending-requests-and-never-gives-a-response)
   - [Q11: What happens when a Write command gets an immediate response?](#q11-what-happens-when-a-write-command-gets-an-immediate-response)
   - [Q12: What happens if multiple Read/Write buttons are pressed rapidly one after another? How are responses mapped to exact commands?](#q12-what-happens-if-multiple-readwrite-buttons-are-pressed-rapidly-one-after-another-how-are-responses-mapped-to-exact-commands)
-  - [Q13: How do I change the serial COM port or CAN channel if my device is plugged into a different port?](#q13-how-do-i-change-the-serial-com-port-or-can-channel-if-my-device-is-plugged-into-a-different-port)
+  - [Q13: How do I change the serial COM port?](#q13-how-do-i-change-the-serial-com-port)
   - [Q14: What if COM port access is denied or another application is using the port?](#q14-what-if-com-port-access-is-denied-or-another-application-is-using-the-port)
   - [Q15: What happens if I paste a raw Hex frame directly into the log console window?](#q15-what-happens-if-i-paste-a-raw-hex-frame-directly-into-the-log-console-window)
   - [Q16: Why is there no Write button for Tag EPC ID?](#q16-why-is-there-no-write-button-for-tag-epc-id)
   - [Q17: What if an operator types an incomplete or invalid VIN/Serial into the entry box?](#q17-what-if-an-operator-types-an-incomplete-or-invalid-vinserial-into-the-entry-box)
-  - [Q18: What happens if there is a CAN bitrate mismatch (e.g. reader is 500kbps, app is 250kbps)?](#q18-what-happens-if-there-is-a-can-bitrate-mismatch-eg-reader-is-500kbps-app-is-250kbps)
   - [Q19: How do I export transaction logs for quality control or audit reports?](#q19-how-do-i-export-transaction-logs-for-quality-control-or-audit-reports)
-  - [Q20: What happens if the USB cable or CAN adapter is physically unplugged while connected?](#q20-what-happens-if-the-usb-cable-or-can-adapter-is-physically-unplugged-while-connected)
-  - [Q21: How do I configure custom 29-bit extended CAN IDs for OEM readers?](#q21-how-do-i-configure-custom-29-bit-extended-can-ids-for-oem-readers)
+  - [Q20: What happens if the USB cable is physically unplugged while connected?](#q20-what-happens-if-the-usb-cable-is-physically-unplugged-while-connected)
   - [Q22: Why does 'Read All' dispatch commands with a 500ms delay instead of all at once?](#q22-why-does-read-all-dispatch-commands-with-a-500ms-delay-instead-of-all-at-once)
   - [Q23: How do I perform a batch 'Read All' operation across multiple tag fields?](#q23-how-do-i-perform-a-batch-read-all-operation-across-multiple-tag-fields)
   - [Q24: How does the application handle duplicate or stale log entries?](#q24-how-does-the-application-handle-duplicate-or-stale-log-entries)
@@ -74,13 +64,9 @@ graph TD
     TagForm --> Protocol[communication/protocol.py]
     Protocol --> CRC[communication/crc.py]
     
-    UI <--> Base[BaseCommunicator Interface - communication/base.py]
-    Base <--> UART[SerialReader - communication/uart.py]
-    Base <--> CAN[CANReader - communication/can_reader.py]
+    UI --> UART[SerialReader - communication/uart.py]
     
     UART <--> SerialHW[Serial COM Port / Reader ECU]
-    CAN <--> CANHW[USB-to-CAN Hardware / PCAN / SLCAN]
-    
     UI --> Logger[logger/log_console.py]
 ```
 
@@ -89,14 +75,13 @@ graph TD
 | File Path | Description / Responsibility |
 | :--- | :--- |
 | `main.py` | Application entry point. Instantiates and runs `RFIDApp`. |
-| `ui/app.py` | Main orchestrator. Controls GUI event loop, periodic polling (`update_gui`), frame parsing (`_parse_uart_response`), and communicator swapping between UART and CAN. |
-| `communication/base.py` | Abstract Base Class `BaseCommunicator` defining unified hardware operations (`connect`, `disconnect`, `is_connected`, `write_bytes`, `get_raw_batch`, `set_disconnect_callback`). |
+| `ui/app.py` | Main orchestrator. Controls GUI event loop, periodic polling (`update_gui`), and frame parsing (`_parse_uart_response`). |
+| `communication/base.py` | Abstract `BaseCommunicator` interface for connection, transmission, receive queues, and disconnect notifications. |
 | `communication/uart.py` | Threaded, non-blocking UART Serial communication layer wrapping `pyserial`. |
-| `communication/can_reader.py` | Threaded, non-blocking CAN bus communication layer using `python-can` with dynamic CAN ID mapping, multi-frame segmentation, and built-in virtual simulation responder. |
 | `communication/protocol.py` | `0x29` SET transmission frame builder, fixed field specifications, decimal scaling, and metadata extraction. |
 | `communication/crc.py` | CRC-16/CCITT-FALSE checksum calculator over request frame payloads. |
 | `validation/validators.py` | Input field validators for VIN (17 chars), Serial (16 chars), Registration (12 chars), Tag ID (Hex), Axle Count, and GVW Decimal (`validate_gvw_decimal_entry`). |
-| `ui/components/comm_panel.py` | Connection controls (Medium, Port/Channel, Baud/Bitrate), **CAN IDs** setting modal, control state locking (disabled when connected), and Diagnostic Result Cards (PASS/FAIL/NO RESPONSE). |
+| `ui/components/comm_panel.py` | Serial port and baud controls, control state locking, and Diagnostic Result Cards (PASS/FAIL/NO RESPONSE). |
 | `ui/components/tag_form.py` | Form grid containing Entry boxes, Read/Write buttons, "Read All" sequence runner, and 5-second asynchronous request timeout manager (`pending_requests`). |
 | `ui/components/log_panel.py` & `logger/log_console.py` | Rich console log displaying color-coded timestamps, raw TX/RX hex lines, paste-to-send capability, and structured JSON transaction records. |
 
@@ -104,21 +89,12 @@ graph TD
 
 ## 2. Complete Implemented Feature Matrix & User Manual
 
-### Feature 1: Dual Communication Medium (UART & CAN Bus)
-- **Overview**: Provides dynamic selection between UART serial ports and CAN bus adapters.
+### Feature 1: UART Communication
+- **Overview**: Communicates with the RFID reader through a UART serial port.
 - **User Instructions**:
-  1. Select **Medium**: `UART` or `CAN` from the dropdown.
-  2. Select your active port or channel (`COM3`, `PCAN_USBBUS1`, `vcan0`).
-  3. Select baud rate or bitrate (`115200` for UART, `250000` for CAN).
-  4. Click **Connect**.
-
-### Feature 2: Dynamic CAN ID Mapping & Modal Dialog
-- **Overview**: Configure default Transmit CAN ID (`0x7E0`), Receive CAN ID (`0x7E8`), Extended 29-bit CAN IDs, or parameter-specific overrides.
-- **User Instructions**:
-  1. Select **Medium**: `CAN`.
-  2. Click the **CAN IDs** button in the Communication Settings panel.
-  3. Enter custom Tx/Rx CAN IDs in hexadecimal format (e.g. `0x7E0` or `7E0`).
-  4. Click **Apply CAN Settings**.
+  1. Select the serial port connected to the reader.
+  2. Select the reader's configured baud rate.
+  3. Click **Connect**.
 
 ### Feature 3: Non-Blocking Threaded Queue Architecture
 - **Overview**: Multi-threaded read (`_read_loop`) and write (`tx_queue`) workers keep the GUI responsive at 60 FPS under heavy bus traffic.
@@ -145,12 +121,12 @@ graph TD
 - **User Instructions**: Watch the top-right Diagnostic card after any operation for instant visual confirmation.
 
 ### Feature 9: UI Control Locking on Connection
-- **Overview**: Locks Medium, COM Port, and Baud rate dropdowns when connected to prevent accidental setting changes.
+- **Overview**: Locks the serial port and baud rate dropdowns when connected to prevent accidental setting changes.
 - **User Instructions**: Click **Connect** to lock controls; click **Disconnect** to unlock controls for editing.
 
-### Feature 10: Virtual CAN Mode & Built-In RFID Simulator
-- **Overview**: Software loopback testing mode requiring no physical hardware.
-- **User Instructions**: Select Medium `CAN`, Channel `vcan0` or `0`, and click **Connect**. Click **Read All** to see simulated RFID tag responses in real-time (including decimal GVW `45000.50`).
+### Feature 10: Empty and Missing Data Handling
+- Empty and all-zero read values leave the field blank and display a failure instead of being treated as valid data.
+- Error `0x07` clears a pending Tag ID and displays **No Tag / Data Unavailable**.
 
 ### Feature 11: Structured Console & JSON Audit Trail Logging
 - **Overview**: Color-coded console log saving structured JSON records (`name`, `operation`, `command_sent`, `response_received`, `conversion`, `medium`).
@@ -208,37 +184,13 @@ When a command fails on hardware, the reader returns `24 EF <LEN> 7F <FAILED_CMD
 
 ---
 
-## 4. Hardware Setup & CAN Bus Wiring Guide
+## 4. UART Setup
 
-### Supported Adapters & Interfaces
-
-```
-+-------------------+                      +--------------------+
-|                   |  --- CAN_H (High) -> |                    |
-|   USB-to-CAN      |  --- CAN_L (Low)  -> |  RFID Tag Reader   |
-|     Adapter       |  --- GND (Ground) -> |     (CAN Port)     |
-| (Connected to PC) |                      |                    |
-+-------------------+                      +--------------------+
-         |                                           |
-         +=========== 120Ω Termination Resistor =====+
-```
-
-### Physical Wiring Diagram & Pinouts
-
-| Adapter | `python-can` Interface | Channel Name | Wiring Connections |
-| :--- | :--- | :--- | :--- |
-| **PEAK PCAN-USB** | `pcan` | `PCAN_USBBUS1` | DB9 Pin 7 (CAN_H), Pin 2 (CAN_L), Pin 3 (GND) |
-| **CANable / SLCAN** | `slcan` | `COM3`, `COM4` | Terminal Block (CAN_H, CAN_L, GND) |
-| **Kvaser Leaf Light** | `kvaser` | `0` | DB9 Pin 7 (CAN_H), Pin 2 (CAN_L), Pin 3 (GND) |
-| **Vector VN1610** | `vector` | `0` | DB9 Pin 7 (CAN_H), Pin 2 (CAN_L), Pin 3 (GND) |
-| **Virtual Loopback** | `virtual` | `0` / `vcan0` | No physical wiring needed |
-
-> [!IMPORTANT]
-> **Termination Resistor**: Always ensure a **120-ohm termination resistor** is connected across `CAN_H` and `CAN_L` at both ends of the CAN bus.
+Connect the reader to the computer over a serial port, select that port and the baud rate configured on the reader, then click **Connect**. If the port is not listed, reconnect the reader or refresh the available ports.
 
 ---
 
-## 5. Comprehensive Operational, Feature & Technical Q&A (30 Deep Dives)
+## 5. Operational, Feature & Technical Q&A
 
 ### Q1: Why was a trailing space added to the Diagnostic status hex response when writing VIN, while ASCII showed without space?
 - **Root Cause**: For fixed-length string fields like VIN (17 chars), the reader payload binary buffer included padding null bytes (`\x00`) or space bytes (`\x20`). While `decoded_val` in the form used `.rstrip("\x00").strip()` to strip ASCII whitespace, `data_bytes.hex(" ").upper()` generated hex for all payload bytes including trailing `20` / space bytes.
@@ -253,41 +205,6 @@ When a command fails on hardware, the reader returns `24 EF <LEN> 7F <FAILED_CMD
   3. Scans `rx_buffer` for frame start (`$`/`0x24`) and frame end (`#`/`0x23`).
   4. Parses frame length, tag byte (`0x40`..`0x46`), and status in `_parse_uart_response`.
   5. Matches parameter ID against `pending_requests`, pops request tracking, updates Form Entry box, updates Diagnostic PASS/FAIL result card, and appends expandable JSON logs.
-
----
-
-### Q3: How is CAN bus communication integrated alongside UART?
-- **Unified Interface (`BaseCommunicator`)**: Both `SerialReader` (UART) and `CANReader` (CAN) inherit from `BaseCommunicator`.
-- **Dynamic Communicator Swapping**: Selecting **Medium** (UART vs CAN) in `CommPanelFrame` dynamically swaps `self.reader` in `RFIDApp`, `CommPanelFrame`, and `TagFormFrame` without restarting the app.
-- **Multi-Frame Segmentation**: `CANReader` automatically segments payloads larger than 8 bytes (such as 17-byte VIN write frames) across consecutive CAN messages and reassembles incoming CAN frames into full binary `$11...#` protocol frames.
-
----
-
-### Q4: What physical CAN hardware adapters & wiring are required?
-- **Supported Adapters**: PEAK PCAN-USB (`pcan`), CANable/SLCAN (`slcan`), Kvaser Leaf Light (`kvaser`), Vector VN1610 (`vector`), SocketCAN (`socketcan`).
-- **Wiring Setup**:
-  - `CAN_H` (CAN High) $\rightarrow$ Pin 7 on DB9
-  - `CAN_L` (CAN Low) $\rightarrow$ Pin 2 on DB9
-  - `GND` (Ground) $\rightarrow$ Pin 3 or 6 on DB9
-  - **120Ω Termination Resistor**: Required across `CAN_H` and `CAN_L` at both bus ends.
-
----
-
-### Q5: How do I run and test the Virtual CAN setup without hardware?
-- Select **Medium: CAN** and **Channel: vcan0** (or `0`).
-- The application automatically enables Windows cross-platform fallback and built-in virtual RFID tag simulation.
-- Clicking **Read**, **Write**, or **Read All** instantly returns simulated positive response frames, updating Entry boxes, Green PASS cards, and JSON console logs without physical hardware connected.
-
----
-
-### Q6: Why did initial Virtual CAN runs output 'UART RX Timeout' for all fields?
-- **Root Cause**: In READ command frames (`24 11 01 <PARAM_ID> 23`), byte `[3]` is the Parameter ID (`0x00`..`0x06`). In WRITE command frames (`24 11 <LEN> 29 <PARAM_ID> ...`), byte `[3]` is `0x29` and byte `[4]` is the Parameter ID. The virtual simulator was checking `tx_data[4]` (`0xE1`, CRC byte) for READ frames instead of `tx_data[3]`. Because `0xE1` was unmapped, no simulated response was generated, causing 5-second timeouts.
-- **Solution**: Updated `can_reader.py` to extract `param_id = tx_data[4]` if `tx_data[3] == 0x29` (WRITE), else `param_id = tx_data[3]` (READ).
-
----
-
-### Q7: Is this CAN implementation for testing purposes only, or is it 100% production ready?
-- **100% Production Ready**: The parameter ID fix and frame parsing logic are 100% real protocol handling code. When connected to physical USB-to-CAN hardware (PEAK PCAN, SLCAN, Kvaser), real hardware frames are transmitted over `CAN_H`/`CAN_L` wires to the ECU. Virtual CAN responder mode only activates when selecting virtual loopback channels (`0`/`vcan0`).
 
 ---
 
@@ -328,11 +245,11 @@ When a command fails on hardware, the reader returns `24 EF <LEN> 7F <FAILED_CMD
 
 ---
 
-### Q13: How do I change the serial COM port or CAN channel if my device is plugged into a different port?
+### Q13: How do I change the serial COM port?
 1. Click **Disconnect** in the Communication Settings panel.
-2. The **COM Port / Channel** dropdown unlocks automatically (`state="readonly"`).
-3. Select the newly connected COM port (e.g. `COM4`) or CAN channel (`PCAN_USBBUS2`).
-4. Click **Connect**. The controls will lock again and establish communication over the new port.
+2. The **COM Port** dropdown unlocks automatically (`state="readonly"`).
+3. Select the newly connected COM port (e.g. `COM4`).
+4. Click **Connect** to establish communication over the selected port.
 
 ---
 
@@ -345,7 +262,7 @@ When a command fails on hardware, the reader returns `24 EF <LEN> 7F <FAILED_CMD
 
 ### Q15: What happens if I paste a raw Hex frame directly into the log console window?
 - Focus the Log Console window and press `Ctrl+V` with any hex string in your clipboard (e.g., `24 11 01 02 C1 B2 23` or `24110102C1B223`).
-- `_handle_paste_to_log()` intercepts the event, strips `0x` prefixes and spaces, validates even-length hex bytes, transmits the raw binary payload directly over the active reader interface (UART or CAN), and logs `UART TX (hex)` or `CAN TX (hex)` to the console.
+- `_handle_paste_to_log()` intercepts the event, strips `0x` prefixes and spaces, validates even-length hex bytes, transmits the raw binary payload over UART, and logs `UART TX (hex)` to the console.
 
 ---
 
@@ -361,30 +278,15 @@ When a command fails on hardware, the reader returns `24 EF <LEN> 7F <FAILED_CMD
 
 ---
 
-### Q18: What happens if there is a CAN bitrate mismatch (e.g. reader is 500kbps, app is 250kbps)?
-- If the app bitrate does not match the physical CAN bus bitrate, the USB-to-CAN adapter will encounter bus heavy/passive errors and fail to decode incoming frames, resulting in 5-second timeouts.
-- Click **Disconnect**, select `500000` in the **Baud Rate / Bitrate** dropdown, and click **Connect**.
-
----
-
 ### Q19: How do I export transaction logs for quality control or audit reports?
 - Every transaction automatically writes to the log console with expandable JSON objects storing `name`, `operation`, `command_sent`, `response_received`, `conversion`, and `medium`.
 - All activity is also logged to `activity.log` in the application directory for automated auditing and file archival.
 
 ---
 
-### Q20: What happens if the USB cable or CAN adapter is physically unplugged while connected?
-- `_read_loop` and `_write_loop` background threads catch the serial/CAN I/O exception when the hardware is removed.
+### Q20: What happens if the USB cable is physically unplugged while connected?
+- The serial reader catches the I/O exception when the hardware is removed.
 - `_handle_disconnect()` executes automatically, closes handles, fires `on_disconnect_callback()`, and safely updates the UI to **Disconnected** (Gray card) while unlocking the dropdown controls.
-
----
-
-### Q21: How do I configure custom 29-bit extended CAN IDs for OEM readers?
-1. Click **CAN IDs** in the Communication Settings panel.
-2. Enter your custom Transmit CAN ID (e.g. `0x18DAF110`) and Receive CAN ID (e.g. `0x18DA10F1`).
-3. Check the **Extended 29-bit CAN ID** toggle checkbox.
-4. Click **Apply CAN Settings**.
-5. All subsequent messages transmitted by `CANReader` will use 29-bit extended CAN identifiers.
 
 ---
 
@@ -414,8 +316,8 @@ When a command fails on hardware, the reader returns `24 EF <LEN> 7F <FAILED_CMD
 ---
 
 ### Q26: What visual indicators confirm that a communication channel is connected and healthy?
-- **Diagnostic Result Card**: Displays a Green status bar, a checkmark/circle icon, and text reading `Connected | Port: COM3 @ 115200 Baud` (or `Port/Channel: PCAN_USBBUS1 @ 250000 Bps (CAN)`).
-- **Control Lock**: Medium, Port, and Baud rate dropdowns become grayed out/locked, and the **Connect** button changes to disabled while **Disconnect** becomes active.
+- **Diagnostic Result Card**: Displays a Green status bar, a checkmark/circle icon, and the connected serial port and baud rate.
+- **Control Lock**: Port and baud rate dropdowns become grayed out/locked, and the **Connect** button changes to disabled while **Disconnect** becomes active.
 
 ---
 
@@ -443,4 +345,4 @@ When a command fails on hardware, the reader returns `24 EF <LEN> 7F <FAILED_CMD
 
 ## 6. Summary & Status
 
-The RFID Communicator application is fully documented, completely implemented, and verified for production operation across serial UART and CAN bus environments.
+The RFID Communicator application supports serial UART communication with the RFID reader.

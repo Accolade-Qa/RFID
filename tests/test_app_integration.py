@@ -117,27 +117,13 @@ class DummyLogConsole:
         # Logged late response ignored
         assert any("Ignored" in log for log in log_mock.logs)
 
-    def test_medium_swap_uart_and_can(self):
-        app = self.app
-        app._on_medium_change("CAN")
-
-        assert app.reader == app.can_reader
-        assert app.comm_panel_comp.reader == app.can_reader
-        assert app.tag_form_comp.reader == app.can_reader
-
-        app._on_medium_change("UART")
-        assert app.reader == app.serial_reader
-
-
 class TestNoDataResponses:
     def setup_method(self):
-        self.app = RFIDApp()
-        self.app.root.withdraw()
+        self.app = RFIDApp.__new__(RFIDApp)
         self.log_mock = DummyLogConsole()
-        self.app.log_panel_comp.log_console = self.log_mock
-
-    def teardown_method(self):
-        self.app.on_close()
+        self.app.log_panel_comp = type("LogPanel", (), {"log_console": self.log_mock})()
+        self.app.tag_form_comp = DummyTagForm()
+        self.app.comm_panel_comp = DummyCommPanel()
 
     def test_zero_tag_id_fails_without_populating_field(self):
         failures = []
@@ -154,10 +140,32 @@ class TestNoDataResponses:
         frame = b"\x24\xEF\x12\x40" + (b"\x00" * 12) + b"\x00\x00\x23"
         self.app._parse_uart_response(frame)
 
-        assert self.app.tag_form_comp.field_vars["tag_id"].get() == ""
+        assert self.app.tag_form_comp.get_field_value("tag_id") == ""
         assert self.app.comm_panel_comp.title_label.cget("text") == "FAIL"
         assert "No ID/data found" in self.app.comm_panel_comp.subtext_label.cget("text")
         assert failures == ["NO_DATA"]
+
+    def test_tag_id_error_07_clears_value_and_keeps_failure_message(self):
+        failures = []
+        self.app.tag_form_comp.set_field_value("tag_id", "E28068900000000000000001")
+        self.app.tag_form_comp.pending_requests[0x00] = {
+            "req_id": 3,
+            "Name": "Tag ID",
+            "Operation": "Read",
+            "Command Sent": "24 11 01 00 23",
+            "Conversion": "hex as it is",
+            "var_name": "tag_id",
+            "on_failure": failures.append,
+        }
+
+        self.app._parse_uart_response(b"\x24\xEF\x05\x7F\x00\x07\x00\x00\x23")
+
+        assert self.app.tag_form_comp.get_field_value("tag_id") == ""
+        assert self.app.comm_panel_comp.title_label.cget("text") == "FAIL"
+        assert "0x07" in self.app.comm_panel_comp.subtext_label.cget("text")
+        assert "No Tag / Data Unavailable" in self.app.comm_panel_comp.subtext_label.cget("text")
+        assert failures == [7]
+        assert 0x00 not in self.app.tag_form_comp.pending_requests
         assert len(self.log_mock.json_records) == 1
 
     def test_zero_numeric_data_fails_without_populating_field(self):
@@ -175,7 +183,48 @@ class TestNoDataResponses:
         frame = b"\x24\xEF\x06\x43\x00\x00\x00\x00\x23"
         self.app._parse_uart_response(frame)
 
-        assert self.app.tag_form_comp.field_vars["axle"].get() == ""
+        assert self.app.tag_form_comp.get_field_value("axle") == ""
         assert self.app.comm_panel_comp.title_label.cget("text") == "FAIL"
         assert "No ID/data found" in self.app.comm_panel_comp.subtext_label.cget("text")
         assert failures == ["NO_DATA"]
+
+
+class DummyTagForm:
+    def __init__(self):
+        self.pending_requests = {}
+        self.field_values = {"tag_id": "", "axle": ""}
+
+    def set_field_value(self, field_name, value):
+        self.field_values[field_name] = value
+
+    def get_field_value(self, field_name):
+        return self.field_values[field_name]
+
+
+class DummyLabel:
+    def __init__(self):
+        self.text = ""
+
+    def cget(self, option):
+        return self.text
+
+    def configure(self, **kwargs):
+        self.text = kwargs.get("text", self.text)
+
+
+class DummyCommPanel:
+    def __init__(self):
+        self.title_label = DummyLabel()
+        self.subtext_label = DummyLabel()
+
+    def show_fail(self, error_code=None, description=""):
+        self.title_label.configure(text="FAIL")
+        if error_code is not None:
+            detail = ERROR_CODES.get(error_code, "Unknown error")
+            self.subtext_label.configure(text=f"Error 0x{error_code:02X}: {detail}")
+        else:
+            self.subtext_label.configure(text=f"Failure: {description}")
+
+    def show_pass(self, value):
+        self.title_label.configure(text="PASS")
+        self.subtext_label.configure(text=f"Positive response: {value}")

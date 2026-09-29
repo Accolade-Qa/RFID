@@ -2,5 +2,4 @@ ttkbootstrap>=1.10.1
 Pillow>=10.0.0
 pyserial>=3.5
 pyserial-asyncio
-python-can>=4.3.0
 openpyxl

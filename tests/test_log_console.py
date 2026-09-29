@@ -54,12 +54,12 @@ class TestLogConsole(unittest.TestCase):
             command_sent="24 11 17 29 02 ... 23",
             response_received="24 EF 17 42 ... 23",
             conversion="alphanumeric",
-            medium="CAN",
+            medium="UART",
         )
 
         assert record["Name"] == "VIN"
         assert record["Operation"] == "Write"
-        assert record["Medium of transmission"] == "CAN"
+        assert record["Medium of transmission"] == "UART"
         assert "Time Stamp" in record
 
         # Verify saved file contents
