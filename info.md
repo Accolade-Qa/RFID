@@ -58,6 +58,7 @@
   - [Q28: How is decimal Gross Weight encoded into Write frames and decoded from Response frames?](#q28-how-is-decimal-gross-weight-encoded-into-write-frames-and-decoded-from-response-frames)
   - [Q29: What happens if an operator enters a whole integer for Gross Weight (e.g. 45000)?](#q29-what-happens-if-an-operator-enters-a-whole-integer-for-gross-weight-eg-45000)
   - [Q30: What are the numerical bounds for decimal Gross Weight values?](#q30-what-are-the-numerical-bounds-for-decimal-gross-weight-values)
+- [6. Building a Windows Executable](#6-building-a-windows-executable)
 
 ---
 
@@ -441,6 +442,19 @@ When a command fails on hardware, the reader returns `24 EF <LEN> 7F <FAILED_CMD
 
 ---
 
-## 6. Summary & Status
+## 6. Building a Windows Executable
+
+Run these commands from the project root in PowerShell. The windowed build does not open a console window, `--onefile` creates a single executable, and `--add-data` bundles the complete `assets` folder at the path expected by the application.
+
+```powershell
+python -m pip install pyinstaller
+python -m PyInstaller --noconfirm --clean --onefile --windowed --name RFID_MTBD --icon "assets/Acc_logo.ico" --add-data "assets;assets" --collect-all ttkbootstrap main.py
+```
+
+The executable is created at `dist\RFID_Communicator.exe`. The semicolon in `--add-data "assets;assets"` is the Windows separator; use a colon separator when building on macOS or Linux.
+
+---
+
+## 7. Summary & Status
 
 The RFID Communicator application is fully documented, completely implemented, and verified for production operation across serial UART and CAN bus environments.
