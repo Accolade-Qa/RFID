@@ -19,6 +19,9 @@ class DummyReader:
     def is_connected(self):
         return self._connected
 
+    def set_disconnect_callback(self, callback):
+        self.disconnect_callback = callback
+
     def write_bytes(self, data: bytes):
         self.written_bytes.append(data)
 

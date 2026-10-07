@@ -29,11 +29,14 @@ class SerialReader(BaseCommunicator):
         self.tx_queue = queue.Queue(maxsize=1000)
         self.running = False
         self.connected = False
-        self.on_disconnect_callback = None
+        self.on_disconnect_callbacks = []
 
     def set_disconnect_callback(self, callback):
-        """Set callback to notify UI when connection is broken asynchronously."""
-        self.on_disconnect_callback = callback
+        """Register a callback to notify UI when the connection is broken asynchronously."""
+        if callback is None:
+            return
+        if callback not in self.on_disconnect_callbacks:
+            self.on_disconnect_callbacks.append(callback)
 
     def connect(
         self,
@@ -151,11 +154,12 @@ class SerialReader(BaseCommunicator):
                 pass
             self.ser = None
 
-        if was_connected and callable(self.on_disconnect_callback):
-            try:
-                self.on_disconnect_callback()
-            except Exception:
-                pass
+        if was_connected:
+            for callback in list(self.on_disconnect_callbacks):
+                try:
+                    callback()
+                except Exception:
+                    pass
 
     def disconnect(self):
         self._handle_disconnect()

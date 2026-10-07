@@ -11,6 +11,7 @@ class DummyLogConsole:
     def __init__(self):
         self.logs = []
         self.json_records = []
+        self.csv_records = []
 
     def append(self, message):
         self.logs.append(message)
@@ -18,6 +19,9 @@ class DummyLogConsole:
     def append_json(self, **kwargs):
         self.json_records.append(kwargs)
         return kwargs
+
+    def append_csv(self, **kwargs):
+        self.csv_records.append(kwargs)
 
 
     def setUp(self):
@@ -59,6 +63,8 @@ class DummyLogConsole:
         assert app.comm_panel_comp.title_label.cget("text") == "PASS"
         assert len(log_mock.json_records) == 1
         assert log_mock.json_records[0]["Operation"] == "Read"
+        assert len(log_mock.csv_records) == 1
+        assert log_mock.csv_records[0]["Operation"] == "Read"
 
     def test_parse_uart_response_vin_positive(self):
         app = self.app

@@ -45,6 +45,7 @@ READ_COMMANDS = {
 }
 
 READ_ALL_FIELDS = ("tag_id", "serial", "vin", "axle", "registration", "gvw", "rel_version")
+AUTO_READ_PLACEHOLDER = "Enter Second(s)"
 
 PLACEHOLDERS = {
     "tag_id": TAG_ID_PLACEHOLDER,
@@ -70,8 +71,15 @@ class TagFormFrame:
         self.reset_reader_status_cb = reset_reader_status_cb
         self.timeout_cb = timeout_cb
 
+        self.reader.set_disconnect_callback(self._handle_reader_disconnect)
+
         self.field_vars = {}
         self.entry_widgets = {}
+        self.interval_vars = {}
+        self.interval_widgets = {}
+        self.auto_read_jobs = {}
+        self.auto_read_active = {}
+        self.auto_read_intervals = {}
         self.pending_requests = {}  # Maps param_id -> dict of command metadata
         self.request_counter = 0
         self._read_all_active = False
@@ -81,33 +89,99 @@ class TagFormFrame:
         self.form_container = tk.LabelFrame(
             parent_frame,
             text="Tag Data Fields",
-            padx=20,
-            pady=20,
+            padx=16,
+            pady=8,
             bg="#1f2937",
             fg="#f8fafc",
             font=("Segoe UI", 12, "bold"),
         )
-        self.form_container.pack(side="left", fill="y", padx=(0, 10), pady=(0, 8))
-        self.form_container.configure(width=650)
+        self.form_container.pack(side="left", fill="both", expand=False, padx=(0, 10), pady=(0, 8))
+        self.form_container.configure(width=760)
         self.form_container.pack_propagate(False)
 
         self.form_grid = ttkb.Frame(self.form_container)
-        self.form_grid.pack(anchor="nw", padx=5, pady=5)
+        self.form_grid.pack(anchor="nw", padx=5, pady=(17, 5))
+        self.form_grid.columnconfigure(0, minsize=170)
+        self.form_grid.columnconfigure(1, minsize=72)
+        self.form_grid.columnconfigure(2, minsize=82)
+        self.form_grid.columnconfigure(3, minsize=150)
+        self.form_grid.columnconfigure(4, minsize=180)
 
         self._build_fields()
         self._build_action_buttons()
+        self._build_response_section()
+
+    def _build_response_section(self):
+        self.response_frame = tk.LabelFrame(
+            self.form_container,
+            text="Response",
+            padx=12,
+            pady=10,
+            bg="#1f2937",
+            fg="#f8fafc",
+            font=("Segoe UI", 11, "bold"),
+        )
+        self.response_frame.pack(fill="x", padx=5, pady=(10, 5))
+
+        response_row = ttkb.Frame(self.response_frame)
+        response_row.pack(fill="x")
+
+        self.response_status_label = ttkb.Label(
+            response_row,
+            text="No response",
+            foreground="#9CA3AF",
+            style="Field.TLabel",
+        )
+        self.response_status_label.pack(side="left", padx=(0, 8))
+
+        self.response_value_label = ttkb.Label(
+            response_row,
+            text="Waiting for reader response.",
+            foreground="#E2E8F0",
+            style="Field.TLabel",
+            anchor="w",
+        )
+        self.response_value_label.pack(side="left", fill="x", expand=True)
+
+        self.copy_response_button = ttkb.Button(
+            response_row,
+            text="Copy",
+            command=self.copy_response,
+            # pyrefly: ignore [unexpected-keyword]
+            bootstyle="secondary",
+            width=8,
+        )
+        self.copy_response_button.pack(side="right", padx=(8, 0))
+
+        self._response_text = ""
+
+    def show_response(self, response_text: str, success: bool = True):
+        self._response_text = response_text
+        self.response_status_label.configure(
+            text="success" if success else "Error",
+            foreground="#10B981" if success else "#EF4444",
+        )
+        self.response_value_label.configure(text=response_text or "No response data.")
+
+    def copy_response(self):
+        if not self._response_text:
+            return
+        self.root.clipboard_clear()
+        self.root.clipboard_append(self._response_text)
+        self.root.update()
 
     def _build_fields(self):
-        for row_index, (label_text, var_name) in enumerate(FIELD_ROWS):
+        visible_row_index = 0
+        for label_text, var_name in FIELD_ROWS:
             ttkb.Label(self.form_grid, text=label_text, style="Field.TLabel").grid(
-                row=row_index * 2, column=0, columnspan=3, sticky="w", pady=(0, 2)
+                row=visible_row_index * 2, column=0, columnspan=5, sticky="w", pady=(0, 2)
             )
 
             var = tk.StringVar()
             self.field_vars[var_name] = var
             entry_options = {
                 "textvariable": var,
-                "width": 34,
+                "width": 30,
                 "bootstyle": "info",
                 "state": "normal",
             }
@@ -172,7 +246,13 @@ class TagFormFrame:
                 # pyrefly: ignore [unexpected-keyword]
                 entry = ttkb.Entry(self.form_grid, **entry_options)
 
-            entry.grid(row=row_index * 2 + 1, column=0, sticky="w", pady=(0, 8))
+            entry.grid(
+                row=visible_row_index * 2 + 1,
+                column=0,
+                sticky="w",
+                padx=(0, 14),
+                pady=(0, 8),
+            )
             self.entry_widgets[var_name] = entry
 
             if var_name in PLACEHOLDERS:
@@ -191,10 +271,10 @@ class TagFormFrame:
                 bootstyle="info",
                 width=7,
             ).grid(
-                row=row_index * 2 + 1,
+                row=visible_row_index * 2 + 1,
                 column=1,
                 sticky="w",
-                padx=(6, 2),
+                padx=(14, 12),
                 pady=(0, 8),
             )
 
@@ -208,12 +288,183 @@ class TagFormFrame:
                     bootstyle="success",
                     width=7,
                 ).grid(
-                    row=row_index * 2 + 1,
+                    row=visible_row_index * 2 + 1,
+                    column=2,
+                    sticky="w",
+                    padx=(23, 0),
+                    pady=(0, 8),
+                )
+            else:
+                ttkb.Button(
+                    self.form_grid,
+                    text="Write",
+                    command=lambda name=var_name: self.write_field(name),
+                    # pyrefly: ignore [unexpected-keyword]
+                    bootstyle="success",
+                    width=7,
+                ).grid(
+                    row=visible_row_index * 2 + 1,
                     column=2,
                     sticky="w",
                     padx=(2, 0),
                     pady=(0, 8),
                 )
+
+            if var_name in READ_COMMANDS:
+                self._build_auto_read_interval_entry(var_name, visible_row_index, column=3)
+
+            visible_row_index += 1
+
+    def _build_auto_read_interval_entry(self, field_name: str, row_index: int, column: int):
+        var = tk.StringVar(value=AUTO_READ_PLACEHOLDER)
+        self.interval_vars[field_name] = var
+        entry_options = {
+            "textvariable": var,
+            "width": 14,
+            "bootstyle": "info",
+            "state": "normal",
+        }
+        entry_options["validate"] = "key"
+        entry_options["validatecommand"] = (
+            self.root.register(self._validate_auto_read_interval_input),
+            "%P",
+        )
+        # pyrefly: ignore [unexpected-keyword]
+        entry = ttkb.Entry(self.form_grid, **entry_options)
+        entry.grid(row=row_index * 2 + 1, column=column, sticky="w", padx=(8, 0), pady=(0, 8))
+        self.interval_widgets[field_name] = entry
+        entry.configure(foreground=PLACEHOLDER_COLOR)
+        entry.bind("<FocusIn>", lambda e, name=field_name: self._clear_auto_read_placeholder(e, name))
+        entry.bind("<FocusOut>", lambda e, name=field_name: self._restore_auto_read_placeholder(e, name))
+        entry.bind("<Return>", lambda e, name=field_name: self._on_auto_read_interval_enter(e, name))
+        entry.bind("<KP_Enter>", lambda e, name=field_name: self._on_auto_read_interval_enter(e, name))
+
+    def _validate_auto_read_interval_input(self, new_value: str) -> bool:
+        if new_value == "":
+            return True
+        return new_value.isdigit()
+
+    def _clear_auto_read_placeholder(self, event, field_name: str):
+        if self.interval_vars[field_name].get() == AUTO_READ_PLACEHOLDER:
+            self.interval_vars[field_name].set("")
+            event.widget.configure(foreground=NORMAL_COLOR)
+
+    def _restore_auto_read_placeholder(self, event, field_name: str):
+        if self.interval_vars[field_name].get().strip() == "":
+            self.interval_vars[field_name].set(AUTO_READ_PLACEHOLDER)
+            event.widget.configure(foreground=PLACEHOLDER_COLOR)
+
+    def _transmit_auto_read_command(self, parameter: str):
+        log_console = self.get_log_console()
+        cmd_hex, conv_type, field_label, param_id = READ_COMMANDS[parameter]
+        medium_name = self._get_medium_name()
+
+        if not self.reader.is_connected():
+            self._stop_auto_read(parameter)
+            write_log(f"{medium_name} Auto Read stopped: reader disconnected.", log_console)
+            return
+
+        self._register_pending_request(
+            param_id, field_label, "Read", cmd_hex, conv_type, parameter
+        )
+        self.reader.write_bytes(bytes.fromhex(cmd_hex))
+        write_log(f"{medium_name} TX Auto Read Command ({field_label}): {cmd_hex}", log_console)
+
+    def _run_auto_read(self, parameter: str):
+        self.auto_read_jobs.pop(parameter, None)
+        if not self.auto_read_active.get(parameter):
+            return
+
+        if not self.reader.is_connected():
+            self._stop_auto_read(parameter)
+            write_log("Auto Read stopped because reader disconnected.", self.get_log_console())
+            return
+
+        self._transmit_auto_read_command(parameter)
+        interval_seconds = self.auto_read_intervals.get(parameter)
+        if interval_seconds is not None and self.auto_read_active.get(parameter):
+            self.auto_read_jobs[parameter] = self.root.after(
+                interval_seconds * 1000,
+                lambda p=parameter: self._run_auto_read(p),
+            )
+
+    def start_auto_read(self, parameter: str):
+        interval_seconds = self.auto_read_intervals.get(parameter)
+        if parameter not in READ_COMMANDS or interval_seconds is None:
+            return
+
+        self._stop_auto_read(parameter)
+        self.auto_read_intervals[parameter] = interval_seconds
+        self.auto_read_active[parameter] = True
+        self.auto_read_jobs[parameter] = self.root.after(
+            interval_seconds * 1000,
+            lambda p=parameter: self._run_auto_read(p),
+        )
+
+    def stop_auto_read(self, parameter: str):
+        self._stop_auto_read(parameter)
+
+    def restart_auto_read(self, parameter: str):
+        self.start_auto_read(parameter)
+
+    def _stop_auto_read(self, parameter: str):
+        self.auto_read_active[parameter] = False
+        self.auto_read_intervals.pop(parameter, None)
+        job = self.auto_read_jobs.pop(parameter, None)
+        if job is not None:
+            try:
+                self.root.after_cancel(job)
+            except tk.TclError:
+                pass
+
+    def _stop_all_auto_reads(self):
+        for parameter in list(self.interval_vars):
+            self._stop_auto_read(parameter)
+
+    def _on_auto_read_interval_enter(self, event, parameter: str):
+        raw_value = self.interval_vars[parameter].get().strip()
+        if raw_value in ("", AUTO_READ_PLACEHOLDER):
+            self.stop_auto_read(parameter)
+            self.read_field(parameter)
+            return
+
+        self._configure_auto_read_interval(parameter, send_immediately=False)
+
+    def _configure_auto_read_interval(self, parameter: str, send_immediately: bool):
+        raw_value = self.interval_vars[parameter].get().strip()
+        if raw_value in ("", AUTO_READ_PLACEHOLDER):
+            self.stop_auto_read(parameter)
+            return
+
+        if not self._validate_auto_read_interval(raw_value):
+            self.stop_auto_read(parameter)
+            messagebox.showwarning(
+                "Auto Read Interval",
+                "Please enter a value between 1 and 86400 seconds.",
+            )
+            return
+
+        interval_seconds = int(raw_value)
+        self._stop_auto_read(parameter)
+        self.auto_read_intervals[parameter] = interval_seconds
+        self.auto_read_active[parameter] = True
+
+        if send_immediately:
+            self._transmit_auto_read_command(parameter)
+
+        if self.auto_read_active.get(parameter):
+            self.auto_read_jobs[parameter] = self.root.after(
+                interval_seconds * 1000,
+                lambda p=parameter: self._run_auto_read(p),
+            )
+
+    @staticmethod
+    def _validate_auto_read_interval(value: str) -> bool:
+        return value.isdigit() and 1 <= int(value) <= 86400
+
+    def _handle_reader_disconnect(self):
+        self._stop_all_auto_reads()
+        write_log("Auto Read stopped because reader disconnected.", self.get_log_console())
 
     def _build_action_buttons(self):
         button_frame = ttkb.Frame(self.form_container)
@@ -326,6 +577,14 @@ class TagFormFrame:
         medium_name = self._get_medium_name()
 
         if field_name in READ_COMMANDS:
+            if field_name in self.interval_vars:
+                raw_interval = self.interval_vars[field_name].get().strip()
+                if raw_interval not in ("", AUTO_READ_PLACEHOLDER):
+                    self._configure_auto_read_interval(field_name, send_immediately=True)
+                    return
+                else:
+                    self.stop_auto_read(field_name)
+
             cmd_hex, conv_type, field_label, param_id = READ_COMMANDS[field_name]
             cmd_bytes = bytes.fromhex(cmd_hex)
             if self.reader.is_connected():
