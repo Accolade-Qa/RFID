@@ -30,7 +30,7 @@ def build_header_frame(parent_frame, base_dir: Path) -> ttkb.Frame:
 
     header_text = ttkb.Label(
         inner_container,
-        text="RFID Tag Reader - Production",
+        text="RFID TAG READER - PROD ",
         style="Title.TLabel",
     )
     header_text.pack(side="left", pady=10)

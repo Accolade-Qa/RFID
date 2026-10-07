@@ -22,14 +22,7 @@ from logger import write_log
 from communication.protocol import build_write_transmission_frame
 
 FIELD_ROWS = [
-    ("Rel Version", "rel_version"),
     ("Tag ID", "tag_id"),
-    ("Serial Number", "serial"),
-    ("TA Certification", "cert"),
-    ("GVW/GCW", "gvw"),
-    ("VIN", "vin"),
-    ("Registration No.", "registration"),
-    ("Axle Count", "axle"),
 ]
 
 # for MTBD
@@ -46,6 +39,7 @@ READ_COMMANDS = {
 
 READ_ALL_FIELDS = ("tag_id", "serial", "vin", "axle", "registration", "gvw", "rel_version")
 AUTO_READ_PLACEHOLDER = "Enter Second(s)"
+AUTO_READ_FIELDS = ("tag_id",)
 
 PLACEHOLDERS = {
     "tag_id": TAG_ID_PLACEHOLDER,
@@ -73,7 +67,10 @@ class TagFormFrame:
 
         self.reader.set_disconnect_callback(self._handle_reader_disconnect)
 
-        self.field_vars = {}
+        self.field_vars = {
+            name: tk.StringVar(value=placeholder)
+            for name, placeholder in PLACEHOLDERS.items()
+        }
         self.entry_widgets = {}
         self.interval_vars = {}
         self.interval_widgets = {}
@@ -96,20 +93,15 @@ class TagFormFrame:
             font=("Segoe UI", 12, "bold"),
         )
         self.form_container.pack(side="left", fill="both", expand=False, padx=(0, 10), pady=(0, 8))
-        self.form_container.configure(width=760)
-        self.form_container.pack_propagate(False)
 
         self.form_grid = ttkb.Frame(self.form_container)
-        self.form_grid.pack(anchor="nw", padx=5, pady=(17, 5))
-        self.form_grid.columnconfigure(0, minsize=170)
-        self.form_grid.columnconfigure(1, minsize=72)
-        self.form_grid.columnconfigure(2, minsize=82)
-        self.form_grid.columnconfigure(3, minsize=150)
-        self.form_grid.columnconfigure(4, minsize=180)
+        self.form_grid.pack(fill="x", expand=True, padx=5, pady=(8, 5))
+        self.form_grid.columnconfigure(0, minsize=70)
+        self.form_grid.columnconfigure(1, weight=1, minsize=180)
+        self.form_grid.columnconfigure(2, minsize=76)
+        self.form_grid.columnconfigure(3, minsize=130)
 
         self._build_fields()
-        self._build_action_buttons()
-        self._build_response_section()
 
     def _build_response_section(self):
         self.response_frame = tk.LabelFrame(
@@ -174,145 +166,57 @@ class TagFormFrame:
         visible_row_index = 0
         for label_text, var_name in FIELD_ROWS:
             ttkb.Label(self.form_grid, text=label_text, style="Field.TLabel").grid(
-                row=visible_row_index * 2, column=0, columnspan=5, sticky="w", pady=(0, 2)
+                row=visible_row_index, column=0, sticky="w", padx=(4, 6), pady=4
             )
-
-            var = tk.StringVar()
-            self.field_vars[var_name] = var
+            var = self.field_vars[var_name]
             entry_options = {
                 "textvariable": var,
-                "width": 30,
+                "width": 24,
                 "bootstyle": "info",
                 "state": "normal",
             }
-            if var_name == "rel_version":
-                entry_options["validate"] = "key"
-                entry_options["validatecommand"] = (
-                    self.root.register(validate_rel_version_entry),
-                    "%P",
-                )
-                entry = ttkb.Entry(self.form_grid, **entry_options)
-
-            elif var_name == "tag_id":
-                entry_options["validate"] = "key"
-                entry_options["validatecommand"] = (
-                    self.root.register(validate_tag_id_entry),
-                    "%P",
-                )
-                # pyrefly: ignore [unexpected-keyword]
-                entry = ttkb.Entry(self.form_grid, **entry_options)
-            elif var_name == "serial":
-                entry_options["validate"] = "key"
-                entry_options["validatecommand"] = (
-                    self.root.register(validate_serial_entry),
-                    "%P",
-                )
-                # pyrefly: ignore [unexpected-keyword]
-                entry = ttkb.Entry(self.form_grid, **entry_options)
-            elif var_name == "vin":
-                entry_options["validate"] = "key"
-                entry_options["validatecommand"] = (
-                    self.root.register(validate_vin_entry),
-                    "%P",
-                )
-                # pyrefly: ignore [unexpected-keyword]
-                entry = ttkb.Entry(self.form_grid, **entry_options)
-            elif var_name == "registration":
-                entry_options["validate"] = "key"
-                entry_options["validatecommand"] = (
-                    self.root.register(validate_registration_entry),
-                    "%P",
-                )
-                # pyrefly: ignore [unexpected-keyword]
-                entry = ttkb.Entry(self.form_grid, **entry_options)
-            elif var_name == "axle":
-                entry_options["validate"] = "key"
-                entry_options["validatecommand"] = (
-                    self.root.register(validate_numeric_range_entry),
-                    "%P",
-                    5,
-                )
-                # pyrefly: ignore [unexpected-keyword]
-                entry = ttkb.Entry(self.form_grid, **entry_options)
-            elif var_name == "gvw":
-                entry_options["validate"] = "key"
-                entry_options["validatecommand"] = (
-                    self.root.register(validate_gvw_decimal_entry),
-                    "%P",
-                )
-                # pyrefly: ignore [unexpected-keyword]
-                entry = ttkb.Entry(self.form_grid, **entry_options)
-            else:
-                # pyrefly: ignore [unexpected-keyword]
-                entry = ttkb.Entry(self.form_grid, **entry_options)
+            entry_options["validate"] = "key"
+            entry_options["validatecommand"] = (
+                self.root.register(validate_tag_id_entry),
+                "%P",
+            )
+            # pyrefly: ignore [unexpected-keyword]
+            entry = ttkb.Entry(self.form_grid, **entry_options)
 
             entry.grid(
-                row=visible_row_index * 2 + 1,
-                column=0,
-                sticky="w",
-                padx=(0, 14),
-                pady=(0, 8),
+                row=visible_row_index,
+                column=1,
+                sticky="ew",
+                padx=4,
+                pady=4,
             )
             self.entry_widgets[var_name] = entry
 
-            if var_name in PLACEHOLDERS:
-                ph = PLACEHOLDERS[var_name]
-                var.set(ph)
-                entry.configure(foreground=PLACEHOLDER_COLOR)
-                entry.bind("<FocusIn>", lambda e, name=var_name: self._clear_placeholder(e, name))
-                entry.bind("<FocusOut>", lambda e, name=var_name: self._restore_placeholder(e, name))
+            ph = PLACEHOLDERS[var_name]
+            var.set(ph)
+            entry.configure(foreground=PLACEHOLDER_COLOR)
+            entry.bind("<FocusIn>", lambda e, name=var_name: self._clear_placeholder(e, name))
+            entry.bind("<FocusOut>", lambda e, name=var_name: self._restore_placeholder(e, name))
 
-            # Read button alongside field
             ttkb.Button(
                 self.form_grid,
                 text="Read",
                 command=lambda name=var_name: self.read_field(name),
-                # pyrefly: ignore [unexpected-keyword]
                 bootstyle="info",
-                width=7,
+                width=9,
             ).grid(
-                row=visible_row_index * 2 + 1,
-                column=1,
-                sticky="w",
-                padx=(14, 12),
-                pady=(0, 8),
+                row=visible_row_index,
+                column=2,
+                sticky="ew",
+                padx=3,
+                pady=4,
             )
-
-            # Write button alongside field (except for Tag ID)
-            if var_name != "tag_id" and var_name != "rel_version":
-                ttkb.Button(
-                    self.form_grid,
-                    text="Write",
-                    command=lambda name=var_name: self.write_field(name),
-                    # pyrefly: ignore [unexpected-keyword]
-                    bootstyle="success",
-                    width=7,
-                ).grid(
-                    row=visible_row_index * 2 + 1,
-                    column=2,
-                    sticky="w",
-                    padx=(23, 0),
-                    pady=(0, 8),
+            if var_name in AUTO_READ_FIELDS:
+                self._build_auto_read_interval_entry(
+                    var_name,
+                    visible_row_index,
+                    column=3,
                 )
-            else:
-                ttkb.Button(
-                    self.form_grid,
-                    text="Write",
-                    command=lambda name=var_name: self.write_field(name),
-                    # pyrefly: ignore [unexpected-keyword]
-                    bootstyle="success",
-                    width=7,
-                ).grid(
-                    row=visible_row_index * 2 + 1,
-                    column=2,
-                    sticky="w",
-                    padx=(2, 0),
-                    pady=(0, 8),
-                )
-
-            if var_name in READ_COMMANDS:
-                self._build_auto_read_interval_entry(var_name, visible_row_index, column=3)
-
             visible_row_index += 1
 
     def _build_auto_read_interval_entry(self, field_name: str, row_index: int, column: int):
@@ -320,7 +224,7 @@ class TagFormFrame:
         self.interval_vars[field_name] = var
         entry_options = {
             "textvariable": var,
-            "width": 14,
+            "width": 10,
             "bootstyle": "info",
             "state": "normal",
         }
@@ -331,7 +235,7 @@ class TagFormFrame:
         )
         # pyrefly: ignore [unexpected-keyword]
         entry = ttkb.Entry(self.form_grid, **entry_options)
-        entry.grid(row=row_index * 2 + 1, column=column, sticky="w", padx=(8, 0), pady=(0, 8))
+        entry.grid(row=row_index, column=column, sticky="ew", padx=3, pady=(2, 6))
         self.interval_widgets[field_name] = entry
         entry.configure(foreground=PLACEHOLDER_COLOR)
         entry.bind("<FocusIn>", lambda e, name=field_name: self._clear_auto_read_placeholder(e, name))

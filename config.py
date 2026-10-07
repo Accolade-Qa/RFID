@@ -43,7 +43,7 @@ def get_daily_csv_path(dt: datetime | None = None) -> str:
     if dt is None:
         dt = datetime.now()
     date_str = dt.strftime("%Y-%m-%d")
-    return str((APP_DIR / f"activity_records_{date_str}.csv").resolve())
+    return str((APP_DIR / f"tag_records_{date_str}.csv").resolve())
 
 
 CSV_DEFAULT_PATH = get_daily_csv_path()

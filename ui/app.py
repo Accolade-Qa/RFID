@@ -33,7 +33,7 @@ class RFIDApp:
         self.root.geometry("1300x750")
         # self.root.resizable(False, False)
         self.root.minsize(1200, 750)
-        self.root.title("RFID Tag Reader & Writer")
+        self.root.title("RFID PROD TAG READER")
 
         self._configure_styles()
         self._set_app_icon()

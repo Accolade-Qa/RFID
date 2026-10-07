@@ -142,11 +142,25 @@ class LogConsole(scrolledtext.ScrolledText):
                         reader = csv.DictReader(csv_file)
                         has_existing_header = reader.fieldnames is not None
                         if has_existing_header:
-                            existing_rows = [
-                                {field: row.get(field, "") for field in fieldnames}
-                                for row in reader
-                            ]
+                            for row in reader:
+                                existing_rows.append(
+                                    {field: row.get(field, "") for field in fieldnames}
+                                )
                             rewrite_file = reader.fieldnames != fieldnames
+
+                def normalize(value: str) -> str:
+                    return "".join(value.split()).upper()
+
+                request_key = normalize(command_sent)
+                response_key = normalize(response_received)
+                is_duplicate = any(
+                    row.get("Operation", "").strip() == operation
+                    and normalize(row.get("Command Sent", "")) == request_key
+                    and normalize(row.get("Response Received", "")) == response_key
+                    for row in existing_rows
+                )
+                if is_duplicate:
+                    return True
 
                 file_mode = "w" if rewrite_file else "a"
                 with open(target_csv_path, file_mode, newline="", encoding="utf-8") as csv_file:

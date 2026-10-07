@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 from config import get_daily_csv_path
 from logger.log_console import LogConsole
-from ui.components.tag_form import TagFormFrame, AUTO_READ_PLACEHOLDER
+from ui.components.tag_form import AUTO_READ_PLACEHOLDER, READ_COMMANDS, TagFormFrame
 
 
 class TestDailyCsvLogging(unittest.TestCase):
@@ -46,6 +46,55 @@ class TestDailyCsvLogging(unittest.TestCase):
                 self.assertNotIn("Conversion", rows[0])
                 self.assertEqual(rows[0]["Medium of transmission"], "UART")
                 self.assertTrue(rows[0]["Date and Time"] != "")
+
+    def test_append_csv_skips_duplicate_request_for_same_tag(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            csv_path = os.path.join(tmp_dir, "activity_records.csv")
+            log_console = LogConsole()
+            log_console.set_csv_file_path(csv_path)
+
+            record = {
+                "name": "Tag ID",
+                "operation": "Read",
+                "command_sent": "241101008BFE23",
+                "response_received": "E2004704CB506021A9450113",
+                "medium": "UART",
+            }
+            self.assertTrue(log_console.append_csv(**record))
+            self.assertTrue(
+                log_console.append_csv(
+                    **{
+                        **record,
+                        "command_sent": "24 11 01 00 8B FE 23",
+                        "response_received": "e2004704cb506021a9450113",
+                    }
+                )
+            )
+
+            with open(csv_path, "r", newline="", encoding="utf-8") as csv_file:
+                rows = list(csv.DictReader(csv_file))
+            self.assertEqual(len(rows), 1)
+
+    def test_append_csv_keeps_different_tags_for_same_read_request(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            csv_path = os.path.join(tmp_dir, "activity_records.csv")
+            log_console = LogConsole()
+            log_console.set_csv_file_path(csv_path)
+
+            for tag_id in ("E2004704CB506021A9450113", "E2004704CB506021A9450114"):
+                self.assertTrue(
+                    log_console.append_csv(
+                        name="Tag ID",
+                        operation="Read",
+                        command_sent="241101008BFE23",
+                        response_received=tag_id,
+                        medium="UART",
+                    )
+                )
+
+            with open(csv_path, "r", newline="", encoding="utf-8") as csv_file:
+                rows = list(csv.DictReader(csv_file))
+            self.assertEqual(len(rows), 2)
 
 
 class TestIntervalStopOnRead(unittest.TestCase):
@@ -102,7 +151,9 @@ class TestIntervalStopOnRead(unittest.TestCase):
         self.assertFalse(self.tag_form.auto_read_active.get("tag_id"))
         self.assertIsNone(self.tag_form.auto_read_intervals.get("tag_id"))
         self.assertNotIn("tag_id", self.tag_form.auto_read_jobs)
-        self.mock_reader.write_bytes.assert_called_once_with(bytes.fromhex("24110100E1F023"))
+        self.mock_reader.write_bytes.assert_called_once_with(
+            bytes.fromhex(READ_COMMANDS["tag_id"][0])
+        )
 
     def test_interval_stops_when_placeholder_restored_and_read_clicked(self):
         # 1. Start interval
@@ -121,7 +172,9 @@ class TestIntervalStopOnRead(unittest.TestCase):
         self.assertFalse(self.tag_form.auto_read_active.get("tag_id"))
         self.assertIsNone(self.tag_form.auto_read_intervals.get("tag_id"))
         self.assertNotIn("tag_id", self.tag_form.auto_read_jobs)
-        self.mock_reader.write_bytes.assert_called_once_with(bytes.fromhex("24110100E1F023"))
+        self.mock_reader.write_bytes.assert_called_once_with(
+            bytes.fromhex(READ_COMMANDS["tag_id"][0])
+        )
 
 
 if __name__ == "__main__":
