@@ -5,7 +5,12 @@ import threading
 from datetime import datetime
 from tkinter import scrolledtext
 
-from config import JSON_DEFAULT_PATH, LOG_DEFAULT_PATH, get_daily_csv_path
+from config import (
+    JSON_DEFAULT_PATH,
+    LOG_DEFAULT_PATH,
+    SCANNED_TAGS_DEFAULT_PATH,
+    get_daily_csv_path,
+)
 
 MAX_LOG_LINES = 1000
 JSON_LOG_FILE = JSON_DEFAULT_PATH
@@ -32,6 +37,7 @@ class LogConsole(scrolledtext.ScrolledText):
         self.line_count = 0
         self.json_file_path = JSON_LOG_FILE
         self.csv_file_path = None
+        self.scanned_tags_file_path = SCANNED_TAGS_DEFAULT_PATH
         self._lock = threading.Lock()
 
     def append(self, message: str):
@@ -104,6 +110,26 @@ class LogConsole(scrolledtext.ScrolledText):
 
     def set_csv_file_path(self, path: str | None):
         self.csv_file_path = path
+
+    def append_unique_tag(self, tag_id: str) -> bool:
+        """Append a tag ID unless an equivalent ID is already stored."""
+        normalized_tag_id = "".join(tag_id.split()).upper()
+        if not normalized_tag_id or not normalized_tag_id.strip("0"):
+            return False
+
+        with self._lock:
+            with open(self.scanned_tags_file_path, "a+", encoding="utf-8") as tags_file:
+                tags_file.seek(0)
+                existing_tags = {
+                    "".join(line.split()).upper()
+                    for line in tags_file
+                }
+                if normalized_tag_id in existing_tags:
+                    return False
+
+                tags_file.seek(0, os.SEEK_END)
+                tags_file.write(f"{normalized_tag_id}\n")
+        return True
 
     def append_csv(self, name: str, operation: str, command_sent: str,
                    response_received: str = "", conversion: str = "",

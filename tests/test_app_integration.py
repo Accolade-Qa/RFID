@@ -12,6 +12,7 @@ class DummyLogConsole:
         self.logs = []
         self.json_records = []
         self.csv_records = []
+        self.scanned_tags = []
 
     def append(self, message):
         self.logs.append(message)
@@ -22,6 +23,12 @@ class DummyLogConsole:
 
     def append_csv(self, **kwargs):
         self.csv_records.append(kwargs)
+
+    def append_unique_tag(self, tag_id):
+        if tag_id in self.scanned_tags:
+            return False
+        self.scanned_tags.append(tag_id)
+        return True
 
 
     def setUp(self):
@@ -65,6 +72,8 @@ class DummyLogConsole:
         assert log_mock.json_records[0]["Operation"] == "Read"
         assert len(log_mock.csv_records) == 1
         assert log_mock.csv_records[0]["Operation"] == "Read"
+        assert len(log_mock.scanned_tags) == 1
+        assert log_mock.scanned_tags[0] == app.tag_form_comp.get_field_value("tag_id")
 
     def test_parse_uart_response_vin_positive(self):
         app = self.app

@@ -36,6 +36,7 @@ def _resolve_app_dir() -> Path:
 APP_DIR = _resolve_app_dir()
 LOG_DEFAULT_PATH = str((APP_DIR / "activity.log").resolve())
 JSON_DEFAULT_PATH = str((APP_DIR / "activity_records.json").resolve())
+SCANNED_TAGS_DEFAULT_PATH = str((APP_DIR / "scanned_tags.txt").resolve())
 
 
 def get_daily_csv_path(dt: datetime | None = None) -> str:

@@ -491,6 +491,11 @@ class RFIDApp:
                             conversion=conv_type,
                             medium=medium,
                         )
+                        if var_name == "tag_id":
+                            try:
+                                log_console.append_unique_tag(decoded_val)
+                            except OSError as e:
+                                write_log(f"Failed to save scanned Tag ID: {e}", log_console)
 
                     if callable(on_success_cb):
                         try:

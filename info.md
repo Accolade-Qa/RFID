@@ -90,7 +90,7 @@ graph TD
 | File Path | Description / Responsibility |
 | :--- | :--- |
 | `main.py` | Application entry point. Instantiates and runs `RFIDApp`. |
-| `ui/app.py` | Main orchestrator. Controls GUI event loop, periodic polling (`update_gui`), frame parsing (`_parse_uart_response`), and communicator swapping between UART and CAN. |
+| `ui/app.py` | Main orchestrator. Controls GUI event loop, periodic polling (`update_gui`), frame parsing (`_parse_uart_response`), and communicator swapping between UART and CAN. Successful Tag ID reads are also saved uniquely to root-level `scanned_tags.txt`. |
 | `communication/base.py` | Abstract Base Class `BaseCommunicator` defining unified hardware operations (`connect`, `disconnect`, `is_connected`, `write_bytes`, `get_raw_batch`, `set_disconnect_callback`). |
 | `communication/uart.py` | Threaded, non-blocking UART Serial communication layer wrapping `pyserial`. |
 | `communication/can_reader.py` | Threaded, non-blocking CAN bus communication layer using `python-can` with dynamic CAN ID mapping, multi-frame segmentation, and built-in virtual simulation responder. |

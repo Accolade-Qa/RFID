@@ -11,6 +11,23 @@ from ui.components.tag_form import AUTO_READ_PLACEHOLDER, READ_COMMANDS, TagForm
 
 
 class TestDailyCsvLogging(unittest.TestCase):
+    def test_append_unique_tag_writes_only_new_tag_ids(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tags_path = os.path.join(tmp_dir, "scanned_tags.txt")
+            log_console = LogConsole()
+            log_console.scanned_tags_file_path = tags_path
+
+            self.assertTrue(log_console.append_unique_tag("E2004704CB506021A9450113"))
+            self.assertFalse(log_console.append_unique_tag(" e2004704cb506021a9450113 "))
+            self.assertTrue(log_console.append_unique_tag("E2004704CB506021A9450114"))
+            self.assertFalse(log_console.append_unique_tag("000000000000000000000000"))
+
+            with open(tags_path, "r", encoding="utf-8") as tags_file:
+                self.assertEqual(
+                    tags_file.read(),
+                    "E2004704CB506021A9450113\nE2004704CB506021A9450114\n",
+                )
+
     def test_daily_csv_path_format(self):
         test_dt = datetime.datetime(2026, 9, 7, 10, 30, 0)
         daily_path = get_daily_csv_path(test_dt)
