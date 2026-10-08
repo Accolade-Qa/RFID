@@ -62,6 +62,9 @@ class RFIDApp:
 
         self.top_row = ttkb.Frame(self.content_frame)
         self.top_row.pack(fill="x", expand=False, pady=(0, 12))
+        self.top_row.columnconfigure(0, weight=1, uniform="top_panels")
+        self.top_row.columnconfigure(1, weight=1, uniform="top_panels")
+        self.top_row.rowconfigure(0, weight=1)
 
         # Log panel component
         self.log_panel_comp = LogPanelFrame(self.content_frame, self.root)

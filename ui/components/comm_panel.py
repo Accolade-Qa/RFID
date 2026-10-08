@@ -52,7 +52,7 @@ class CommPanelFrame:
         # The communication controls stay in the top row; diagnostics may be
         # placed in a separate full-width row by the application layout.
         self.container_frame = ttkb.Frame(parent_frame)
-        self.container_frame.pack(side="left", fill="both", expand=True, padx=(0, 0))
+        self.container_frame.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
 
         # Communication Settings Frame
         self.communication_frame = tk.LabelFrame(

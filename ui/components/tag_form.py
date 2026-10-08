@@ -92,7 +92,7 @@ class TagFormFrame:
             fg="#f8fafc",
             font=("Segoe UI", 12, "bold"),
         )
-        self.form_container.pack(side="left", fill="both", expand=False, padx=(0, 10), pady=(0, 8))
+        self.form_container.grid(row=0, column=0, sticky="nsew", padx=(0, 5), pady=(0, 8))
 
         self.form_grid = ttkb.Frame(self.form_container)
         self.form_grid.pack(fill="x", expand=True, padx=5, pady=(8, 5))
