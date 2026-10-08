@@ -1,0 +1,16 @@
+{
+  "ezcad_dir": "C:\\Users\\suraj.bhalerao\\Downloads\\LASER MACHINE SETUP 1\\LASER MACHINE SETUP\\20260518SN817DC-355-312698\\20260518SN817DC-355-312698\\Ezcad2.14.11",
+  "markezd_dll": "C:\\Users\\suraj.bhalerao\\Downloads\\LASER MACHINE SETUP 1\\LASER MACHINE SETUP\\20260518SN817DC-355-312698\\20260518SN817DC-355-312698\\Ezcad2.14.11\\MarkEzd.dll",
+  "template_ezd": "C:\\Users\\suraj.bhalerao\\Downloads\\LASER MACHINE SETUP 1\\LASER MACHINE SETUP\\20260518SN817DC-355-312698\\20260518SN817DC-355-312698\\Ezcad2.14.11\\RFID_MARK.ezd",
+
+  "csv_dir": "D:\\AEPL_AUTOMATION\\RFID\\tag_records",
+  "csv_file_prefix": "tag_records_",
+
+  "text_object_name": "RFID_TEXT",
+
+  "state_file": "printer_state.json",
+  "poll_seconds": 1.0,
+
+  "test_mode": false,
+  "fly_mark": false
+}
