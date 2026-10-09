@@ -100,10 +100,21 @@ graph TD
 | `ui/components/comm_panel.py` | Connection controls (Medium, Port/Channel, Baud/Bitrate), **CAN IDs** setting modal, control state locking (disabled when connected), and Diagnostic Result Cards (PASS/FAIL/NO RESPONSE). |
 | `ui/components/tag_form.py` | Form grid containing Entry boxes, Read/Write buttons, "Read All" sequence runner, and 5-second asynchronous request timeout manager (`pending_requests`). |
 | `ui/components/log_panel.py` & `logger/log_console.py` | Rich console log displaying color-coded timestamps, raw TX/RX hex lines, paste-to-send capability, and structured JSON transaction records. |
+| `printer/main.py` | Polls `scanned_tags.txt`, updates the configured EZCAD text object, starts marking, and records successfully marked IDs in `printer_state.json`. |
+| `printer/ezcad.py` | Calls EZCAD 2.x through `MarkEzd.dll`; requires 32-bit Python and matching EZCAD runtime DLLs. |
 
 ---
 
 ## 2. Complete Implemented Feature Matrix & User Manual
+
+### RFID tag laser-marking workflow
+
+1. A successful Tag ID read appends the ID to the project-level `scanned_tags.txt`, one unique ID per line.
+2. Configure `printer/config.json` with the EZCAD installation directory, the `.ezd` template, and the exact EZCAD text object's name. The default `tag_file` path (`..\\scanned_tags.txt`) resolves from the `printer` folder to the scanner output file.
+3. Run `printer/main.py` with 32-bit Python on the laser-control PC. The process initializes the EZCAD SDK, loads the template, then polls the tag file in order.
+4. For each ID not in `printer_state.json`, the printer updates the named text object and calls EZCAD's mark operation. It saves the ID as processed only after EZCAD reports completion; errors are logged and the ID remains pending for retry.
+
+The printer starts marking automatically when run with `test_mode` set to `false`; verify the template, text-object name, machine setup, and laser safety controls before enabling live marking. `printer_state.json` prevents already-completed IDs from being marked again across restarts. If the printer is first started with a tag file that already contains IDs and no state file, those IDs are treated as pending.
 
 ### Feature 1: Dual Communication Medium (UART & CAN Bus)
 - **Overview**: Provides dynamic selection between UART serial ports and CAN bus adapters.
