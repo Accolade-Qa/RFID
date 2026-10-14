@@ -1,5 +1,10 @@
-"""Build script to compile RFID_LASER into a standalone 32-bit Windows executable."""
+"""Build script to compile RFID_LASER into standalone 32-bit Windows executables.
+Builds both:
+- RFID_LASER.exe (Production GUI - windowed without console)
+- RFID_LASER_debug.exe (Diagnostic GUI - with live terminal console for tracking errors & frames)
+"""
 
+import glob
 import os
 import shutil
 import subprocess
@@ -11,10 +16,11 @@ def build():
     app_dir = Path(__file__).resolve().parent
     dist_dir = app_dir / "dist"
     build_dir = app_dir / "build"
+    out_dir = dist_dir / "RFID_LASER"
 
-    print("==================================================")
-    print("Building RFID Laser Marking Utility (32-bit Win7)")
-    print("==================================================")
+    print("==========================================================")
+    print("Building RFID Laser Marking Utilities (32-bit Windows 7)")
+    print("==========================================================")
 
     # Clean previous build artifacts
     if dist_dir.exists():
@@ -22,7 +28,9 @@ def build():
     if build_dir.exists():
         shutil.rmtree(build_dir)
 
-    cmd = [
+    # 1. Build Production Windowed Executable (RFID_LASER.exe)
+    print("\n[STEP 1/2] Compiling Production Executable (RFID_LASER.exe)...")
+    cmd_prod = [
         "py",
         "-3.8-32",
         "-m",
@@ -30,45 +38,70 @@ def build():
         "--noconfirm",
         "--windowed",
         "--name=RFID_LASER",
-        "--add-data=test.ezd;.",
-        "--add-data=EZCAD.CFG;.",
-        "--add-data=MarkEzd.dll;.",
-        "--add-data=Lmc1.dll;.",
-        "--add-data=DataMgr.dll;.",
-        "--add-data=mathlib.dll;.",
-        "--add-data=LMCMIO.dll;.",
         str(app_dir / "laser_main.py"),
     ]
+    res_prod = subprocess.run(cmd_prod, cwd=str(app_dir))
+    if res_prod.returncode != 0:
+        print("[ERROR] Production build failed!")
+        sys.exit(res_prod.returncode)
 
-    print(f"Running command: {' '.join(cmd)}")
-    result = subprocess.run(cmd, cwd=str(app_dir))
+    # 2. Build Debug / Diagnostic Executable with Console (RFID_LASER_debug.exe)
+    print("\n[STEP 2/2] Compiling Diagnostic Executable (RFID_LASER_debug.exe with live console)...")
+    cmd_debug = [
+        "py",
+        "-3.8-32",
+        "-m",
+        "PyInstaller",
+        "--noconfirm",
+        "--console",
+        "--name=RFID_LASER_debug",
+        str(app_dir / "laser_main.py"),
+    ]
+    res_debug = subprocess.run(cmd_debug, cwd=str(app_dir))
+    if res_debug.returncode != 0:
+        print("[ERROR] Debug build failed!")
+        sys.exit(res_debug.returncode)
 
-    if result.returncode != 0:
-        print("[ERROR] Build failed!")
-        sys.exit(result.returncode)
+    # Merge RFID_LASER_debug.exe into dist/RFID_LASER folder
+    debug_exe = dist_dir / "RFID_LASER_debug" / "RFID_LASER_debug.exe"
+    if debug_exe.is_file() and out_dir.exists():
+        shutil.copy2(debug_exe, out_dir / "RFID_LASER_debug.exe")
+        print("Merged RFID_LASER_debug.exe into dist/RFID_LASER/")
 
-    # Copy DLLs and templates into dist/RFID_LASER output folder
-    out_dir = dist_dir / "RFID_LASER"
-    if out_dir.exists():
-        files_to_copy = [
-            "DataMgr.dll",
-            "EZCAD.CFG",
-            "Lmc1.dll",
-            "LMCMIO.dll",
-            "MarkEzd.dll",
-            "mathlib.dll",
-            "test.ezd",
-        ]
-        for fname in files_to_copy:
-            src = app_dir / fname
-            dst = out_dir / fname
-            if src.exists() and not dst.exists():
-                shutil.copy2(src, dst)
-                print(f"Copied companion file: {fname} -> dist/RFID_LASER")
+    # 3. Copy ALL EzCAD Companion DLLs, CFG, and templates
+    print("\n[STEP 3/3] Bundling complete EzCAD runtime DLLs and client setup scripts...")
+    dll_files = glob.glob(str(app_dir / "*.dll"))
+    for dll_path in dll_files:
+        fname = os.path.basename(dll_path)
+        dst = out_dir / fname
+        if not dst.exists():
+            shutil.copy2(dll_path, dst)
+            print(f"  + Bundled DLL: {fname}")
 
-    print("\n[SUCCESS] Build completed successfully!")
-    print(f"Executable directory: {out_dir}")
-    print(f"Executable path: {out_dir / 'RFID_LASER.exe'}")
+    # Copy template and CFG
+    for fname in ["EZCAD.CFG", "test.ezd"]:
+        src = app_dir / fname
+        if src.is_file():
+            shutil.copy2(src, out_dir / fname)
+            print(f"  + Bundled Config: {fname}")
+
+    # Copy setup & diagnostic scripts
+    scripts_src = app_dir / "scripts"
+    scripts_dst = out_dir / "scripts"
+    if scripts_src.is_dir():
+        if scripts_dst.exists():
+            shutil.rmtree(scripts_dst)
+        shutil.copytree(scripts_src, scripts_dst)
+        print("  + Bundled client scripts/ directory")
+
+    print("\n==========================================================")
+    print("[SUCCESS] Build Complete! Package ready in:")
+    print(f"  -> {out_dir}")
+    print("Files created:")
+    print(f"  1. Production:  {out_dir / 'RFID_LASER.exe'} (Clean GUI)")
+    print(f"  2. Diagnostic:  {out_dir / 'RFID_LASER_debug.exe'} (With Live Console)")
+    print(f"  3. Client Setup:{out_dir / 'scripts' / 'setup_client.bat'}")
+    print("==========================================================")
 
 
 if __name__ == "__main__":

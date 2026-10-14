@@ -18,8 +18,14 @@ from ui.laser_components.laser_panel import LaserPanel
 from ui.laser_components.log_panel import LogPanel
 from ui.laser_components.rfid_panel import RFIDPanel
 
-APP_DIR = Path(__file__).resolve().parent.parent
+def resolve_app_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent.parent
+
+APP_DIR = resolve_app_dir()
 SETTINGS_FILE = APP_DIR / "laser_settings.json"
+
 
 DEFAULT_SETTINGS: Dict[str, Any] = {
     "port": "COM3",
