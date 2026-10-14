@@ -270,7 +270,9 @@ The template defines the text placement, font, size, laser power, marking speed,
 | Symptom / Error | Cause | Solution |
 | :--- | :--- | :--- |
 | **`Error 1: EZCAD is already running`** | Standalone EzCAD 2.14.11 GUI application is open. | Close EzCAD 2.14.11 before clicking Connect or Mark. |
+| **`Error 3: Failed to open LMC1 control board`** | Laser controller USB is disconnected, laser is unpowered, or driver not installed. | Check USB cable, power switch, and ensure BJJCZ driver is active. The utility will automatically run in Simulation Mode until hardware is connected. |
 | **`Error 4: No valid LMC1 device detected`** | Laser controller USB is disconnected or unpowered. | Check USB cable, laser power switch, and Device Manager. |
+| **`Error 11: Laser controller not initialized`** | Template loaded before controller initialization. | Resolved in latest release: utility auto-initializes with HWND; check that laser board is connected and uncheck Simulation Mode. |
 | **`Error 13: Window handle is null / device absent`** | LMC1 board not initialized or USB dongle absent. | Reconnect laser board USB and restart the utility. |
 | **`Error 18: Object not found`** | Entity named `t1` does not exist in `test.ezd`. | Open `test.ezd` in EzCAD, rename the text element to `t1`, save, and close EzCAD. |
 | **`Could not open serial port COMx`** | Another software has the port locked. | Close other serial terminals; verify port number in Device Manager. |
