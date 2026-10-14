@@ -3,6 +3,7 @@ import threading
 import time
 import serial
 from serial.tools import list_ports
+from typing import List, Optional
 from communication.base import BaseCommunicator
 
 
@@ -171,7 +172,7 @@ class SerialReader(BaseCommunicator):
     def is_connected(self) -> bool:
         return self.connected and self.ser is not None and self.ser.is_open
 
-    def get_raw_data(self) -> bytes | None:
+    def get_raw_data(self) -> Optional[bytes]:
         if not self.raw_queue.empty():
             try:
                 return self.raw_queue.get_nowait()
@@ -179,7 +180,7 @@ class SerialReader(BaseCommunicator):
                 return None
         return None
 
-    def get_raw_batch(self, max_items: int = 50) -> list[bytes]:
+    def get_raw_batch(self, max_items: int = 50) -> List[bytes]:
         batch = []
         for _ in range(max_items):
             if self.raw_queue.empty():

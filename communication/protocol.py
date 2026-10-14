@@ -1,5 +1,7 @@
 """Protocol frame construction and CRC calculation for RFID reader communication."""
 
+from typing import Dict, Tuple
+
 from communication.crc import aepl_rfid_calculate_crc16, crc_to_bytes
 
 HEADER = 0x24  # '$'
@@ -69,7 +71,7 @@ FIELD_SPECS = {
 
 def build_write_transmission_frame(
     field_name: str, input_value: str
-) -> tuple[bytes, str, dict]:
+) -> Tuple[bytes, str, Dict]:
 
     if field_name not in FIELD_SPECS:
         raise ValueError(f"Unknown field name: {field_name}")

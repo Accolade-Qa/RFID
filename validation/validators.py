@@ -1,6 +1,7 @@
 """Validation functions for RFID UI field entries."""
 
 import re
+from typing import Union
 
 
 REL_VERSION_PLACEHOLDER = "1.0.0_REL18_R"
@@ -83,7 +84,7 @@ def is_integer_in_range(value: str, min_value: int, max_value: int) -> bool:
         return False
 
 
-def validate_numeric_range_entry(new_value: str, max_digits: str | int = 10) -> bool:
+def validate_numeric_range_entry(new_value: str, max_digits: Union[str, int] = 10) -> bool:
     if new_value == "" or new_value in (AXLE_PLACEHOLDER, GVW_PLACEHOLDER):
         return True
     try:

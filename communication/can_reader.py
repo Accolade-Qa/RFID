@@ -4,6 +4,7 @@ import queue
 import threading
 import time
 import sys
+from typing import List, Optional
 from communication.base import BaseCommunicator
 from config import (
     CAN_CHANNEL,
@@ -355,7 +356,7 @@ class CANReader(BaseCommunicator):
     def is_connected(self) -> bool:
         return self.connected
 
-    def get_raw_data(self) -> bytes | None:
+    def get_raw_data(self) -> Optional[bytes]:
         if not self.raw_queue.empty():
             try:
                 return self.raw_queue.get_nowait()
@@ -363,7 +364,7 @@ class CANReader(BaseCommunicator):
                 return None
         return None
 
-    def get_raw_batch(self, max_items: int = 50) -> list[bytes]:
+    def get_raw_batch(self, max_items: int = 50) -> List[bytes]:
         batch = []
         for _ in range(max_items):
             if self.raw_queue.empty():

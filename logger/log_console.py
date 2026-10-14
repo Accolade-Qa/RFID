@@ -4,6 +4,7 @@ import os
 import threading
 from datetime import datetime
 from tkinter import scrolledtext
+from typing import Optional
 
 from config import (
     JSON_DEFAULT_PATH,
@@ -108,7 +109,7 @@ class LogConsole(scrolledtext.ScrolledText):
             return self.csv_file_path
         return get_daily_csv_path()
 
-    def set_csv_file_path(self, path: str | None):
+    def set_csv_file_path(self, path: Optional[str]):
         self.csv_file_path = path
 
     def append_unique_tag(self, tag_id: str) -> bool:

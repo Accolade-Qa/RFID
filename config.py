@@ -1,6 +1,7 @@
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 # UART Configuration Defaults
 PORT = "COM3"
@@ -39,7 +40,7 @@ JSON_DEFAULT_PATH = str((APP_DIR / "activity_records.json").resolve())
 SCANNED_TAGS_DEFAULT_PATH = str((APP_DIR / "scanned_tags.txt").resolve())
 
 
-def get_daily_csv_path(dt: datetime | None = None) -> str:
+def get_daily_csv_path(dt: Optional[datetime] = None) -> str:
     """Return the daily CSV file path for the given or current date."""
     if dt is None:
         dt = datetime.now()

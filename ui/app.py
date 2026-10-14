@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 import ttkbootstrap as ttkb
 
 from config import (
@@ -199,7 +200,7 @@ class RFIDApp:
         return "break"
 
     @staticmethod
-    def _hex_bytes_from_text(s: str) -> bytes | None:
+    def _hex_bytes_from_text(s: str) -> Optional[bytes]:
         filtered = s.replace("0x", "").replace("0X", "").replace(" ", "")
         if len(filtered) % 2 != 0:
             return None

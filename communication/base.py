@@ -1,6 +1,7 @@
 """Abstract Base Class for hardware communicators (UART Serial, CAN Bus, etc.)."""
 
 from abc import ABC, abstractmethod
+from typing import List
 
 
 class BaseCommunicator(ABC):
@@ -27,7 +28,7 @@ class BaseCommunicator(ABC):
         pass
 
     @abstractmethod
-    def get_raw_batch(self, max_items: int = 50) -> list[bytes]:
+    def get_raw_batch(self, max_items: int = 50) -> List[bytes]:
         """Fetch batch of received raw binary payloads."""
         pass
 
