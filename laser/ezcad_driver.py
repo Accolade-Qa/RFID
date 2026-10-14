@@ -38,6 +38,10 @@ class BaseLaserDriver:
     def is_initialized(self) -> bool:
         raise NotImplementedError
 
+    def get_last_mark_duration(self) -> float:
+        return getattr(self, "last_mark_duration", 0.0)
+
+
 
 class HardwareEzcadDriver(BaseLaserDriver):
     """Direct 32-bit ctypes wrapper for MarkEzd.dll."""
@@ -161,11 +165,15 @@ class HardwareEzcadDriver(BaseLaserDriver):
         if not self.initialized:
             return False, "Laser driver not initialized"
 
+        t0 = time.time()
         rc = self._lmc1_Mark(int(fly_mark))
+        self.last_mark_duration = time.time() - t0
+
         if rc != 0:
             err_msg = EZCAD_ERROR_MESSAGES.get(rc, f"Code {rc}")
-            return False, f"Marking failed: {err_msg}"
-        return True, "Marking completed successfully"
+            return False, f"Laser marking failed: {err_msg} (Exit code: {rc})"
+        return True, f"Laser marking completed successfully in {self.last_mark_duration:.2f}s (Hardware Feedback: OK)"
+
 
     def stop_mark(self) -> None:
         if self._lmc1_StopMark:
@@ -225,9 +233,11 @@ class SimulationEzcadDriver(BaseLaserDriver):
     def mark(self, fly_mark: bool = False) -> Tuple[bool, str]:
         if not self.initialized:
             return False, "Driver not initialized"
-        # Simulate marking duration
-        time.sleep(0.5)
-        return True, "[SIMULATION] Marking completed successfully"
+        t0 = time.time()
+        time.sleep(1.0)  # Simulate physical laser marking trajectory
+        self.last_mark_duration = time.time() - t0
+        return True, f"[SIMULATION] Laser marking completed successfully in {self.last_mark_duration:.2f}s (Feedback: OK)"
+
 
     def stop_mark(self) -> None:
         pass

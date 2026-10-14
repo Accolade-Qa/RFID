@@ -1,4 +1,4 @@
-"""EzCAD laser marking configuration and control panel."""
+"""EzCAD laser marking configuration and control panel with hardware feedback."""
 
 import tkinter as tk
 from tkinter import filedialog, ttk
@@ -16,18 +16,23 @@ class LaserPanel(ttk.LabelFrame):
         default_entity: str = "t1",
         default_simulation: bool = False,
         default_auto_mark: bool = False,
+        default_continuous: bool = False,
         on_update_template: Optional[Callable[[str, str], None]] = None,
         on_mark: Optional[Callable[[], None]] = None,
         on_read_and_mark: Optional[Callable[[], None]] = None,
         on_stop_mark: Optional[Callable[[], None]] = None,
         on_simulation_toggle: Optional[Callable[[bool], None]] = None,
+        on_continuous_toggle: Optional[Callable[[bool, float], None]] = None,
     ):
-        super().__init__(parent, text="EzCAD Laser Marking Control", padding=(12, 10))
+        super().__init__(parent, text="EzCAD Laser Marking & Feedback Control", padding=(12, 10))
         self.on_update_template = on_update_template
         self.on_mark = on_mark
         self.on_read_and_mark = on_read_and_mark
         self.on_stop_mark = on_stop_mark
         self.on_simulation_toggle = on_simulation_toggle
+        self.on_continuous_toggle = on_continuous_toggle
+
+        self.jobs_completed_count = 0
 
         self.columnconfigure(1, weight=1)
 
@@ -63,22 +68,36 @@ class LaserPanel(ttk.LabelFrame):
         self.prefix_entry = ttk.Entry(row2_frame, textvariable=self.prefix_var, width=12)
         self.prefix_entry.grid(row=0, column=3, sticky="w")
 
-        # Row 3: Options (Auto-mark & Simulation mode)
+        # Row 3: Options (Auto-mark, Continuous loop & Simulation mode)
         row3_frame = ttk.Frame(self)
-        row3_frame.grid(row=3, column=0, columnspan=3, sticky="ew", pady=(2, 8))
+        row3_frame.grid(row=3, column=0, columnspan=3, sticky="ew", pady=(2, 6))
 
         self.auto_mark_var = tk.BooleanVar(value=default_auto_mark)
         self.auto_mark_chk = ttk.Checkbutton(
             row3_frame,
-            text="Auto-Mark upon receiving Tag ID",
+            text="Auto-Mark on Read",
             variable=self.auto_mark_var,
         )
-        self.auto_mark_chk.pack(side="left", padx=(0, 16))
+        self.auto_mark_chk.pack(side="left", padx=(0, 12))
+
+        self.continuous_var = tk.BooleanVar(value=default_continuous)
+        self.continuous_chk = ttk.Checkbutton(
+            row3_frame,
+            text="Continuous Loop (Auto-Next on Feedback)",
+            variable=self.continuous_var,
+            command=self._handle_continuous_toggle,
+        )
+        self.continuous_chk.pack(side="left", padx=(0, 6))
+
+        ttk.Label(row3_frame, text="Delay (s):").pack(side="left", padx=(0, 2))
+        self.next_delay_var = tk.DoubleVar(value=1.0)
+        self.next_delay_entry = ttk.Entry(row3_frame, textvariable=self.next_delay_var, width=4)
+        self.next_delay_entry.pack(side="left", padx=(0, 12))
 
         self.sim_var = tk.BooleanVar(value=default_simulation)
         self.sim_chk = ttk.Checkbutton(
             row3_frame,
-            text="Simulation Mode (no hardware board needed)",
+            text="Simulation Mode",
             variable=self.sim_var,
             command=self._handle_sim_toggle,
         )
@@ -86,7 +105,7 @@ class LaserPanel(ttk.LabelFrame):
 
         # Row 4: Action Buttons
         btn_frame = ttk.Frame(self)
-        btn_frame.grid(row=4, column=0, columnspan=3, sticky="ew", pady=(6, 2))
+        btn_frame.grid(row=4, column=0, columnspan=3, sticky="ew", pady=(6, 4))
         btn_frame.columnconfigure(0, weight=1)
         btn_frame.columnconfigure(1, weight=1)
         btn_frame.columnconfigure(2, weight=2)
@@ -144,6 +163,39 @@ class LaserPanel(ttk.LabelFrame):
         )
         self.stop_btn.grid(row=0, column=3, sticky="ew")
 
+        # Row 5: Live Hardware Feedback & Status Indicator
+        feedback_frame = ttk.Frame(self)
+        feedback_frame.grid(row=5, column=0, columnspan=3, sticky="ew", pady=(6, 2))
+        feedback_frame.columnconfigure(0, weight=2)
+        feedback_frame.columnconfigure(1, weight=1)
+
+        self.status_banner = tk.Label(
+            feedback_frame,
+            text="● LASER READY (WAITING FOR JOB)",
+            font=("Segoe UI", 9, "bold"),
+            bg="#DCFCE7",
+            fg="#166534",
+            padx=10,
+            pady=5,
+            relief="groove",
+            borderwidth=1,
+            anchor="w",
+        )
+        self.status_banner.grid(row=0, column=0, sticky="ew", padx=(0, 6))
+
+        self.counter_lbl = tk.Label(
+            feedback_frame,
+            text="Jobs Marked: 0",
+            font=("Segoe UI", 9, "bold"),
+            bg="#F3F4F6",
+            fg="#1F2937",
+            padx=8,
+            pady=5,
+            relief="groove",
+            borderwidth=1,
+        )
+        self.counter_lbl.grid(row=0, column=1, sticky="ew")
+
     def _browse_template(self):
         file_path = filedialog.askopenfilename(
             title="Select EzCAD Template (.ezd)",
@@ -160,6 +212,12 @@ class LaserPanel(ttk.LabelFrame):
     def _handle_sim_toggle(self):
         if self.on_simulation_toggle:
             self.on_simulation_toggle(self.sim_var.get())
+
+    def _handle_continuous_toggle(self):
+        active = self.continuous_var.get()
+        delay = self.get_next_job_delay()
+        if self.on_continuous_toggle:
+            self.on_continuous_toggle(active, delay)
 
     def _handle_update(self):
         if self.on_update_template:
@@ -194,13 +252,56 @@ class LaserPanel(ttk.LabelFrame):
     def is_auto_mark_enabled(self) -> bool:
         return self.auto_mark_var.get()
 
+    def is_continuous_enabled(self) -> bool:
+        return self.continuous_var.get()
+
+    def get_next_job_delay(self) -> float:
+        try:
+            val = float(self.next_delay_var.get())
+            return max(val, 0.2)
+        except ValueError:
+            return 1.0
+
     def is_simulation(self) -> bool:
         return self.sim_var.get()
 
-    def set_marking_state(self, is_marking: bool):
+    def set_marking_state(self, is_marking: bool, status_msg: str = "", level: str = "INFO"):
+        """Update buttons and live status feedback banner."""
         if is_marking:
             self.mark_btn.config(state="disabled", text="Marking...")
             self.read_mark_btn.config(state="disabled")
+            self.update_btn.config(state="disabled")
+            self.status_banner.config(
+                text=status_msg or "⏳ LASER MARKING IN PROGRESS... WAITING FOR COMPLETION",
+                bg="#FEF3C7",
+                fg="#92400E",
+            )
         else:
             self.mark_btn.config(state="normal", text="⚡ Mark Tag")
             self.read_mark_btn.config(state="normal")
+            self.update_btn.config(state="normal")
+            if level == "SUCCESS":
+                self.status_banner.config(
+                    text=status_msg or "✅ JOB DONE (FEEDBACK: OK) — READY FOR NEXT",
+                    bg="#DCFCE7",
+                    fg="#166534",
+                )
+            elif level == "ERROR":
+                self.status_banner.config(
+                    text=status_msg or "❌ MARKING FAILED",
+                    bg="#FEE2E2",
+                    fg="#991B1B",
+                )
+            else:
+                self.status_banner.config(
+                    text="● LASER READY (WAITING FOR JOB)",
+                    bg="#DCFCE7",
+                    fg="#166534",
+                )
+
+    def record_job_completed(self, duration: float):
+        """Increment counter and display last job duration."""
+        self.jobs_completed_count += 1
+        self.counter_lbl.config(
+            text=f"Jobs Marked: {self.jobs_completed_count} ({duration:.2f}s)"
+        )

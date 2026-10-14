@@ -89,6 +89,8 @@ class RFIDLaserApp:
         self.is_auto_reading = False
         self.auto_read_timer_id: Optional[str] = None
         self.pending_read_for_mark = False
+        self.is_marking = False
+        self.continuous_job_timer_id: Optional[str] = None
 
         self._build_ui()
         self._init_laser_driver()
@@ -200,10 +202,15 @@ class RFIDLaserApp:
         self.root.after(0, lambda: self.log_comp.log("RFID reader disconnected asynchronously.", level="WARNING"))
 
     def _trigger_read_tag(self):
+        if self.is_marking:
+            self.log_comp.log("Laser marking is in progress. Waiting for hardware completion before reading next tag.", level="WARNING")
+            return
+
         if not self.reader.is_connected():
             self.log_comp.log("Cannot read tag: Serial reader is not connected.", level="WARNING")
             self.rfid_comp.set_reading_state(False, msg="Reader disconnected")
             return
+
 
         self.rfid_comp.set_reading_state(True, msg="Reading...")
         self.log_comp.log(f"TX -> RFID: Read Tag ID command [{READ_TAG_ID_CMD.hex(' ').upper()}]", level="INFO")
@@ -331,35 +338,91 @@ class RFIDLaserApp:
             messagebox.showerror("EzCAD Error", result_msg)
             return False
 
-    def _trigger_mark(self):
+    def _trigger_mark(self, on_complete: Optional[Any] = None):
+        if self.is_marking:
+            self.log_comp.log("Laser is already in progress. Please wait for current job to complete.", level="WARNING")
+            return
+
         if not self.laser_driver or not self.laser_driver.is_initialized():
             self._init_laser_driver()
             if not self.laser_driver or not self.laser_driver.is_initialized():
                 self.log_comp.log("Cannot mark: EzCAD driver not initialized.", level="ERROR")
                 return
 
-        self.laser_comp.set_marking_state(True)
-        self.log_comp.log("Firing laser mark...", level="HIGHLIGHT")
+        self.is_marking = True
+        self.laser_comp.set_marking_state(True, "⏳ LASER MARKING IN PROGRESS... WAITING FOR HARDWARE FEEDBACK")
+        self.log_comp.log("Firing laser mark... Waiting for LMC1 hardware completion feedback.", level="HIGHLIGHT")
 
         def _worker():
             try:
                 ok, msg = self.laser_driver.mark(fly_mark=False)
-                if ok:
-                    self.root.after(0, lambda: self.log_comp.log(f"Mark completed: {msg}", level="SUCCESS"))
-                else:
-                    self.root.after(0, lambda: self.log_comp.log(f"Mark failed: {msg}", level="ERROR"))
+                duration = self.laser_driver.get_last_mark_duration()
+
+                def _handle_ui_done():
+                    self.is_marking = False
+                    if ok:
+                        self.laser_comp.set_marking_state(
+                            False,
+                            f"✅ JOB DONE ({duration:.2f}s) — FEEDBACK: OK — READY FOR NEXT",
+                            level="SUCCESS",
+                        )
+                        self.laser_comp.record_job_completed(duration)
+                        self.log_comp.log(f"Laser feedback received: SUCCESS! {msg}", level="SUCCESS")
+
+                        if callable(on_complete):
+                            on_complete(True)
+
+                        # Continuous Pipeline: Auto-trigger next tag upon feedback
+                        if self.laser_comp.is_continuous_enabled():
+                            delay = self.laser_comp.get_next_job_delay()
+                            self.log_comp.log(
+                                f"[CONTINUOUS PIPELINE] Job done. Waiting {delay:.1f}s before reading next tag...",
+                                level="INFO",
+                            )
+                            self.rfid_comp.clear_tag()
+                            if self.continuous_job_timer_id:
+                                self.root.after_cancel(self.continuous_job_timer_id)
+                            self.continuous_job_timer_id = self.root.after(
+                                int(delay * 1000), self._trigger_continuous_next
+                            )
+                    else:
+                        self.laser_comp.set_marking_state(
+                            False,
+                            f"❌ MARKING FAILED — {msg}",
+                            level="ERROR",
+                        )
+                        self.log_comp.log(f"Laser feedback received: FAILURE! {msg}", level="ERROR")
+                        if callable(on_complete):
+                            on_complete(False)
+
+                self.root.after(0, _handle_ui_done)
             except Exception as e:
-                self.root.after(0, lambda: self.log_comp.log(f"Mark exception: {e}", level="ERROR"))
-            finally:
-                self.root.after(0, lambda: self.laser_comp.set_marking_state(False))
+                def _handle_ui_err():
+                    self.is_marking = False
+                    self.laser_comp.set_marking_state(False, f"❌ EXCEPTION: {e}", level="ERROR")
+                    self.log_comp.log(f"Mark execution exception: {e}", level="ERROR")
+                    if callable(on_complete):
+                        on_complete(False)
+                self.root.after(0, _handle_ui_err)
 
         threading.Thread(target=_worker, daemon=True).start()
+
+    def _trigger_continuous_next(self):
+        """Callback invoked when laser completes and continuous pipeline is enabled."""
+        if not self.laser_comp.is_continuous_enabled():
+            return
+        if self.is_marking:
+            return
+        self.log_comp.log("=== Continuous Pipeline: Scanning Next RFID Tag ===", level="HIGHLIGHT")
+        self.pending_read_for_mark = True
+        self._trigger_read_tag()
 
     def _perform_update_and_mark(self):
         entity = self.laser_comp.get_entity_name()
         prefix = self.laser_comp.get_prefix()
         if self._update_template_text(entity, prefix):
             self._trigger_mark()
+
 
     def _trigger_read_and_mark_flow(self):
         self.log_comp.log("=== Initiating One-Click Read & Mark Flow ===", level="HIGHLIGHT")
@@ -372,9 +435,16 @@ class RFIDLaserApp:
         self._trigger_read_tag()
 
     def _stop_marking(self):
+        if self.continuous_job_timer_id:
+            self.root.after_cancel(self.continuous_job_timer_id)
+            self.continuous_job_timer_id = None
+        self.pending_read_for_mark = False
         if self.laser_driver:
             self.laser_driver.stop_mark()
             self.log_comp.log("Stop marking command issued to laser controller.", level="WARNING")
+        self.is_marking = False
+        self.laser_comp.set_marking_state(False, "⏹ LASER STOPPED BY OPERATOR", level="WARNING")
+
 
     def _toggle_simulation_mode(self, is_sim: bool):
         self.settings["simulation_mode"] = is_sim
