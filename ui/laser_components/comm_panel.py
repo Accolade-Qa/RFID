@@ -4,7 +4,15 @@ import tkinter as tk
 from tkinter import ttk
 from typing import Callable, Optional
 
-from communication.serial_reader import list_available_ports
+from serial.tools import list_ports
+
+
+def list_available_ports():
+    try:
+        return [p.device for p in list_ports.comports()]
+    except Exception:
+        return []
+
 
 
 class CommPanel(ttk.LabelFrame):
