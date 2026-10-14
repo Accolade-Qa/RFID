@@ -1,6 +1,6 @@
 """Protocol frame construction and CRC calculation for RFID reader communication."""
 
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
 
 from communication.crc import aepl_rfid_calculate_crc16, crc_to_bytes
 
@@ -182,3 +182,40 @@ def build_write_transmission_frame(
     }
 
     return frame, frame_hex_spaced, metadata
+
+
+# Read Tag ID Frame
+READ_TAG_ID_CMD = bytes.fromhex("241101008BFE23")
+
+
+def build_read_tag_cmd() -> bytes:
+    """Return raw bytes for Read Tag ID command."""
+    return READ_TAG_ID_CMD
+
+
+def parse_rfid_response_frame(frame: bytes) -> Tuple[bool, Optional[str], str]:
+    """
+    Parse an RFID response frame received from the reader.
+    Returns:
+        (success: bool, decoded_tag_id: Optional[str], message: str)
+    """
+    if len(frame) < 5:
+        return False, None, "Frame too short"
+
+    if frame[0] != HEADER or frame[-1] != TRAILER:
+        return False, None, "Invalid frame boundary (missing $ or #)"
+
+    data_bytes = frame[4:-3] if len(frame) >= 7 else b""
+
+    if not data_bytes or not any(data_bytes):
+        return False, None, "No Tag / Empty data response"
+
+    hex_str = data_bytes.hex().upper()
+    if len(hex_str) > 24:
+        hex_str = hex_str[:24]
+
+    if not hex_str.strip("0"):
+        return False, None, "No Tag detected (all zeros)"
+
+    return True, hex_str, "Tag ID read successfully"
+

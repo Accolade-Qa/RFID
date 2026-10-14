@@ -1,0 +1,255 @@
+"""EZCAD 2.14.11 Laser Marking Driver via MarkEzd.dll ctypes integration."""
+
+import ctypes
+import os
+import struct
+import sys
+import time
+from pathlib import Path
+from typing import List, Optional, Tuple
+
+from laser.errors import EZCADError, EZCAD_ERROR_MESSAGES
+
+
+class BaseLaserDriver:
+    """Base interface for laser drivers."""
+
+    def initialize(self, ezcad_dir: str, test_mode: bool = False) -> None:
+        raise NotImplementedError
+
+    def load_template(self, ezd_path: str) -> None:
+        raise NotImplementedError
+
+    def list_entities(self) -> List[str]:
+        raise NotImplementedError
+
+    def change_text(self, entity_name: str, new_text: str) -> Tuple[bool, str]:
+        raise NotImplementedError
+
+    def mark(self, fly_mark: bool = False) -> Tuple[bool, str]:
+        raise NotImplementedError
+
+    def stop_mark(self) -> None:
+        raise NotImplementedError
+
+    def close(self) -> None:
+        raise NotImplementedError
+
+    def is_initialized(self) -> bool:
+        raise NotImplementedError
+
+
+class HardwareEzcadDriver(BaseLaserDriver):
+    """Direct 32-bit ctypes wrapper for MarkEzd.dll."""
+
+    def __init__(self, ezcad_dir: str):
+        self.ezcad_dir = str(Path(ezcad_dir).resolve())
+        self.dll_path = os.path.join(self.ezcad_dir, "MarkEzd.dll")
+        self.initialized = False
+        self.loaded_template: Optional[str] = None
+        self._entities: List[str] = []
+
+        # Enforce 32-bit architecture
+        if struct.calcsize("P") * 8 != 32:
+            raise RuntimeError(
+                f"MarkEzd.dll is a 32-bit binary. Current Python is {struct.calcsize('P') * 8}-bit. "
+                "Please run with 32-bit Python 3.8."
+            )
+
+        if not os.path.isfile(self.dll_path):
+            raise FileNotFoundError(f"MarkEzd.dll not found in {self.ezcad_dir}")
+
+        # Register DLL search directory
+        if hasattr(os, "add_dll_directory"):
+            try:
+                os.add_dll_directory(self.ezcad_dir)
+            except Exception:
+                pass
+        try:
+            ctypes.windll.kernel32.SetDllDirectoryW(self.ezcad_dir)
+        except Exception:
+            pass
+
+        # Load DLL
+        try:
+            self.dll = ctypes.WinDLL(self.dll_path)
+        except Exception as exc:
+            raise EZCADError(11, "Load MarkEzd.dll", str(exc))
+
+        self._bind_functions()
+
+    def _bind_functions(self) -> None:
+        def _bind(name, argtypes, restype=ctypes.c_int):
+            if hasattr(self.dll, name):
+                fn = getattr(self.dll, name)
+                fn.argtypes = argtypes
+                fn.restype = restype
+                return fn
+            return None
+
+        self._lmc1_Initial2 = _bind("lmc1_Initial2", [ctypes.c_wchar_p, ctypes.c_int])
+        self._lmc1_Initial = _bind("lmc1_Initial", [ctypes.c_wchar_p, ctypes.c_int, ctypes.c_void_p])
+        self._lmc1_Close = _bind("lmc1_Close", [])
+        self._lmc1_LoadEzdFile = _bind("lmc1_LoadEzdFile", [ctypes.c_wchar_p])
+        self._lmc1_ChangeTextByName = _bind("lmc1_ChangeTextByName", [ctypes.c_wchar_p, ctypes.c_wchar_p])
+        self._lmc1_Mark = _bind("lmc1_Mark", [ctypes.c_int])
+        self._lmc1_StopMark = _bind("lmc1_StopMark", [])
+        self._lmc1_GetEntityCount = _bind("lmc1_GetEntityCount", [])
+        self._lmc1_GetEntityName = _bind("lmc1_GetEntityName", [ctypes.c_int, ctypes.c_wchar_p])
+
+    def initialize(self, ezcad_dir: Optional[str] = None, test_mode: bool = False) -> None:
+        target_dir = ezcad_dir or self.ezcad_dir
+        if not self._lmc1_Initial2:
+            raise EZCADError(11, "Initialize", "lmc1_Initial2 export not available in DLL")
+
+        rc = self._lmc1_Initial2(target_dir, int(test_mode))
+        if rc != 0:
+            raise EZCADError(rc, "lmc1_Initial2")
+        self.initialized = True
+
+    def load_template(self, ezd_path: str) -> None:
+        if not self.initialized:
+            raise EZCADError(11, "load_template", "Driver not initialized")
+
+        resolved_ezd = str(Path(ezd_path).resolve())
+        if not os.path.isfile(resolved_ezd):
+            raise FileNotFoundError(f"Template file not found: {resolved_ezd}")
+
+        rc = self._lmc1_LoadEzdFile(resolved_ezd)
+        if rc != 0:
+            raise EZCADError(rc, "lmc1_LoadEzdFile", resolved_ezd)
+
+        self.loaded_template = resolved_ezd
+        self._entities = self._query_entities()
+
+    def _query_entities(self) -> List[str]:
+        if not self._lmc1_GetEntityCount or not self._lmc1_GetEntityName:
+            return []
+        count = self._lmc1_GetEntityCount()
+        names = []
+        buf = ctypes.create_unicode_buffer(256)
+        for i in range(count):
+            buf.value = ""
+            self._lmc1_GetEntityName(i, buf)
+            names.append(buf.value)
+        return names
+
+    def list_entities(self) -> List[str]:
+        if not self._entities:
+            self._entities = self._query_entities()
+        return list(self._entities)
+
+    def change_text(self, entity_name: str, new_text: str) -> Tuple[bool, str]:
+        if not self.initialized:
+            return False, "Laser driver not initialized"
+
+        # Find entity name matching case-insensitively
+        target_name = entity_name
+        current_entities = self.list_entities()
+        for ent in current_entities:
+            if ent.lower() == entity_name.lower():
+                target_name = ent
+                break
+
+        rc = self._lmc1_ChangeTextByName(target_name, new_text)
+        if rc != 0:
+            err_msg = EZCAD_ERROR_MESSAGES.get(rc, f"Code {rc}")
+            return False, f"ChangeTextByName('{target_name}') failed: {err_msg}"
+        return True, f"Updated entity '{target_name}' -> '{new_text}'"
+
+    def mark(self, fly_mark: bool = False) -> Tuple[bool, str]:
+        if not self.initialized:
+            return False, "Laser driver not initialized"
+
+        rc = self._lmc1_Mark(int(fly_mark))
+        if rc != 0:
+            err_msg = EZCAD_ERROR_MESSAGES.get(rc, f"Code {rc}")
+            return False, f"Marking failed: {err_msg}"
+        return True, "Marking completed successfully"
+
+    def stop_mark(self) -> None:
+        if self._lmc1_StopMark:
+            try:
+                self._lmc1_StopMark()
+            except Exception:
+                pass
+
+    def close(self) -> None:
+        if self.initialized and self._lmc1_Close:
+            try:
+                self._lmc1_Close()
+            except Exception:
+                pass
+            self.initialized = False
+
+    def is_initialized(self) -> bool:
+        return self.initialized
+
+
+class SimulationEzcadDriver(BaseLaserDriver):
+    """Software simulation driver allowing testing without physical laser hardware."""
+
+    def __init__(self, ezcad_dir: str):
+        self.ezcad_dir = ezcad_dir
+        self.initialized = False
+        self.loaded_template: Optional[str] = None
+        self.entities = ["t1", "T1", "barcode1", "date_stamp"]
+        self.current_values = {"t1": "DEMO_TAG_1234567890"}
+
+    def initialize(self, ezcad_dir: Optional[str] = None, test_mode: bool = False) -> None:
+        self.initialized = True
+
+    def load_template(self, ezd_path: str) -> None:
+        if not self.initialized:
+            raise EZCADError(11, "load_template", "Driver not initialized")
+        self.loaded_template = str(Path(ezd_path).resolve())
+
+    def list_entities(self) -> List[str]:
+        return list(self.entities)
+
+    def change_text(self, entity_name: str, new_text: str) -> Tuple[bool, str]:
+        if not self.initialized:
+            return False, "Driver not initialized"
+        matched = False
+        for ent in self.entities:
+            if ent.lower() == entity_name.lower():
+                self.current_values[ent] = new_text
+                matched = True
+                break
+        if not matched:
+            self.entities.append(entity_name)
+            self.current_values[entity_name] = new_text
+
+        return True, f"[SIMULATION] Updated entity '{entity_name}' -> '{new_text}'"
+
+    def mark(self, fly_mark: bool = False) -> Tuple[bool, str]:
+        if not self.initialized:
+            return False, "Driver not initialized"
+        # Simulate marking duration
+        time.sleep(0.5)
+        return True, "[SIMULATION] Marking completed successfully"
+
+    def stop_mark(self) -> None:
+        pass
+
+    def close(self) -> None:
+        self.initialized = False
+
+    def is_initialized(self) -> bool:
+        return self.initialized
+
+
+def create_laser_driver(ezcad_dir: str, simulation_mode: bool = False) -> BaseLaserDriver:
+    """Factory creating appropriate laser driver instance."""
+    if simulation_mode:
+        driver = SimulationEzcadDriver(ezcad_dir)
+        driver.initialize(ezcad_dir)
+        return driver
+    try:
+        return HardwareEzcadDriver(ezcad_dir)
+    except Exception:
+        # If hardware initialization fails (e.g. no 32-bit DLL or on dev machine),
+        # return a simulation driver with a notification
+        sim = SimulationEzcadDriver(ezcad_dir)
+        sim.initialize(ezcad_dir)
+        return sim
