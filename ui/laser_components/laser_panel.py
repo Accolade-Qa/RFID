@@ -265,6 +265,9 @@ class LaserPanel(ttk.LabelFrame):
     def is_simulation(self) -> bool:
         return self.sim_var.get()
 
+    def set_simulation(self, sim: bool) -> None:
+        self.sim_var.set(sim)
+
     def set_marking_state(self, is_marking: bool, status_msg: str = "", level: str = "INFO"):
         """Update buttons and live status feedback banner."""
         if is_marking:

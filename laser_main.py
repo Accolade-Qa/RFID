@@ -125,6 +125,7 @@ def run_diagnostics():
 
         # Test export symbols
         symbols = [
+            "lmc1_Initial",
             "lmc1_Initial2",
             "lmc1_LoadEzdFile",
             "lmc1_ChangeTextByName",
@@ -136,6 +137,26 @@ def run_diagnostics():
                 print(f"    [PASS] Symbol found: {sym}")
             else:
                 print(f"    [WARN] Symbol missing: {sym}")
+
+        # Test hardware controller detection
+        try:
+            hwnd = ctypes.windll.user32.CreateWindowExW(
+                0, "STATIC", "DiagOwner", 0, 0, 0, 0, 0, 0, 0, 0, 0
+            )
+            dll.lmc1_Initial.argtypes = [ctypes.c_wchar_p, ctypes.c_int, ctypes.c_void_p]
+            dll.lmc1_Initial.restype = ctypes.c_int
+            rc = dll.lmc1_Initial(str(PROJECT_ROOT), 0, ctypes.c_void_p(hwnd))
+            if rc == 0:
+                print("    [PASS] EzCAD LMC1 Controller Board: DETECTED & INITIALIZED on USB.")
+                if hasattr(dll, "lmc1_Close"):
+                    dll.lmc1_Close()
+            elif rc in (3, 4):
+                print(f"    [NOTICE] EzCAD LMC1 Controller Board: NOT CONNECTED (rc={rc}: USB Board not found).")
+                print("             (App will run in Simulation Mode until USB board is plugged in).")
+            else:
+                print(f"    [WARN] EzCAD LMC1 Controller Board initialization returned code: {rc}")
+        except Exception as exc:
+            print(f"    [WARN] Could not probe controller board: {exc}")
     except Exception as e:
         print(f"    [FAIL] Error loading MarkEzd.dll: {e}")
 

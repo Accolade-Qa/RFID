@@ -159,8 +159,24 @@ class RFIDLaserApp:
             if self.laser_driver:
                 self.laser_driver.close()
 
-            self.laser_driver = create_laser_driver(ezcad_dir, simulation_mode=sim_mode)
-            self.header_comp.update_mode(sim_mode)
+            hwnd = self.root.winfo_id()
+            self.laser_driver = create_laser_driver(ezcad_dir, simulation_mode=sim_mode, hwnd=hwnd)
+
+            fallback_reason = getattr(self.laser_driver, "fallback_reason", None)
+            if fallback_reason:
+                self.log_comp.log(
+                    f"Hardware laser controller not detected: {fallback_reason}",
+                    level="WARNING",
+                )
+                self.log_comp.log(
+                    "Running in SIMULATION MODE. Connect EzCAD USB controller and power on laser to use real hardware.",
+                    level="WARNING",
+                )
+                self.laser_comp.set_simulation(True)
+                self.header_comp.update_mode(True)
+                sim_mode = True
+            else:
+                self.header_comp.update_mode(sim_mode)
 
             template_path = self.laser_comp.get_template_path()
             if os.path.isfile(template_path):

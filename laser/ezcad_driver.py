@@ -14,7 +14,10 @@ from laser.errors import EZCADError, EZCAD_ERROR_MESSAGES
 class BaseLaserDriver:
     """Base interface for laser drivers."""
 
-    def initialize(self, ezcad_dir: str, test_mode: bool = False) -> None:
+    is_simulation: bool = False
+    fallback_reason: Optional[str] = None
+
+    def initialize(self, ezcad_dir: Optional[str] = None, test_mode: bool = False, hwnd: Optional[int] = None) -> None:
         raise NotImplementedError
 
     def load_template(self, ezd_path: str) -> None:
@@ -50,8 +53,11 @@ class HardwareEzcadDriver(BaseLaserDriver):
         self.ezcad_dir = str(Path(ezcad_dir).resolve())
         self.dll_path = os.path.join(self.ezcad_dir, "MarkEzd.dll")
         self.initialized = False
+        self.is_simulation = False
+        self.fallback_reason = None
         self.loaded_template: Optional[str] = None
         self._entities: List[str] = []
+        self.last_mark_duration: float = 0.0
 
         # Enforce 32-bit architecture
         if struct.calcsize("P") * 8 != 32:
@@ -101,14 +107,36 @@ class HardwareEzcadDriver(BaseLaserDriver):
         self._lmc1_GetEntityCount = _bind("lmc1_GetEntityCount", [])
         self._lmc1_GetEntityName = _bind("lmc1_GetEntityName", [ctypes.c_int, ctypes.c_wchar_p])
 
-    def initialize(self, ezcad_dir: Optional[str] = None, test_mode: bool = False) -> None:
+    def initialize(self, ezcad_dir: Optional[str] = None, test_mode: bool = False, hwnd: Optional[int] = None) -> None:
         target_dir = ezcad_dir or self.ezcad_dir
-        if not self._lmc1_Initial2:
-            raise EZCADError(11, "Initialize", "lmc1_Initial2 export not available in DLL")
 
-        rc = self._lmc1_Initial2(target_dir, int(test_mode))
+        # Ensure current working directory is ezcad_dir for MarkEzd dependent resource loading
+        if os.path.isdir(target_dir):
+            try:
+                os.chdir(target_dir)
+            except Exception:
+                pass
+
+        # MarkEzd requires a valid window handle. Create a lightweight static HWND if none provided.
+        actual_hwnd = hwnd
+        if not actual_hwnd:
+            try:
+                actual_hwnd = ctypes.windll.user32.CreateWindowExW(
+                    0, "STATIC", "RFID_EzCAD_Owner", 0, 0, 0, 0, 0, 0, 0, 0, 0
+                )
+            except Exception:
+                actual_hwnd = 0
+
+        rc = -1
+        if self._lmc1_Initial:
+            rc = self._lmc1_Initial(target_dir, int(test_mode), ctypes.c_void_p(actual_hwnd))
+        elif self._lmc1_Initial2:
+            rc = self._lmc1_Initial2(target_dir, int(test_mode))
+        else:
+            raise EZCADError(11, "Initialize", "lmc1_Initial export not found in MarkEzd.dll")
+
         if rc != 0:
-            raise EZCADError(rc, "lmc1_Initial2")
+            raise EZCADError(rc, "lmc1_Initial")
         self.initialized = True
 
     def load_template(self, ezd_path: str) -> None:
@@ -200,11 +228,14 @@ class SimulationEzcadDriver(BaseLaserDriver):
     def __init__(self, ezcad_dir: str):
         self.ezcad_dir = ezcad_dir
         self.initialized = False
+        self.is_simulation = True
+        self.fallback_reason = None
         self.loaded_template: Optional[str] = None
         self.entities = ["t1", "T1", "barcode1", "date_stamp"]
         self.current_values = {"t1": "DEMO_TAG_1234567890"}
+        self.last_mark_duration = 0.0
 
-    def initialize(self, ezcad_dir: Optional[str] = None, test_mode: bool = False) -> None:
+    def initialize(self, ezcad_dir: Optional[str] = None, test_mode: bool = False, hwnd: Optional[int] = None) -> None:
         self.initialized = True
 
     def load_template(self, ezd_path: str) -> None:
@@ -238,7 +269,6 @@ class SimulationEzcadDriver(BaseLaserDriver):
         self.last_mark_duration = time.time() - t0
         return True, f"[SIMULATION] Laser marking completed successfully in {self.last_mark_duration:.2f}s (Feedback: OK)"
 
-
     def stop_mark(self) -> None:
         pass
 
@@ -249,17 +279,33 @@ class SimulationEzcadDriver(BaseLaserDriver):
         return self.initialized
 
 
-def create_laser_driver(ezcad_dir: str, simulation_mode: bool = False) -> BaseLaserDriver:
-    """Factory creating appropriate laser driver instance."""
+def create_laser_driver(
+    ezcad_dir: str,
+    simulation_mode: bool = False,
+    hwnd: Optional[int] = None,
+    allow_simulation_fallback: bool = True,
+) -> BaseLaserDriver:
+    """Factory creating appropriate laser driver instance.
+
+    If simulation_mode is True, returns an initialized SimulationEzcadDriver.
+    If simulation_mode is False, attempts to initialize HardwareEzcadDriver.
+    If hardware initialization fails (e.g. no board plugged in, error 3/4) and
+    allow_simulation_fallback is True, gracefully falls back to SimulationEzcadDriver
+    with fallback_reason set.
+    """
     if simulation_mode:
         driver = SimulationEzcadDriver(ezcad_dir)
-        driver.initialize(ezcad_dir)
+        driver.initialize(ezcad_dir, hwnd=hwnd)
         return driver
+
     try:
-        return HardwareEzcadDriver(ezcad_dir)
-    except Exception:
-        # If hardware initialization fails (e.g. no 32-bit DLL or on dev machine),
-        # return a simulation driver with a notification
-        sim = SimulationEzcadDriver(ezcad_dir)
-        sim.initialize(ezcad_dir)
-        return sim
+        hw = HardwareEzcadDriver(ezcad_dir)
+        hw.initialize(ezcad_dir, test_mode=False, hwnd=hwnd)
+        return hw
+    except Exception as exc:
+        if allow_simulation_fallback:
+            sim = SimulationEzcadDriver(ezcad_dir)
+            sim.initialize(ezcad_dir, hwnd=hwnd)
+            setattr(sim, "fallback_reason", str(exc))
+            return sim
+        raise
