@@ -16,4 +16,6 @@ dist/
 *.spec
 *.log
 *.csv
-laser_settings.json
+laser_settings.json
+laser_gui_settings.json
+marked_tags.txt

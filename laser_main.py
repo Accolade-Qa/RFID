@@ -1,6 +1,7 @@
-"""Standalone Launcher for AEPL RFID Laser Marking Utility with Crash Diagnostics.
-Connects RFID Reader -> reads Tag ID -> updates text 't1' in EzCAD template 'test.ezd' -> marks laser.
-Compatible with Windows 7 32-bit and Python 3.8 32-bit.
+"""AEPL RFID Laser Marking Utility — Main Application Entry Point (EzCAD GUI Automation).
+Coordinates RFID Reader, Duplicate Prevention, Dynamic Text File Generation,
+and Win32 EzCAD GUI Automation.
+Compatible with 32-bit and 64-bit Windows (Windows 7/10/11).
 """
 
 from datetime import datetime
@@ -12,45 +13,64 @@ import sys
 import traceback
 from typing import Tuple
 
+
 def resolve_project_root() -> Path:
     if getattr(sys, "frozen", False):
         return Path(sys.executable).resolve().parent
     return Path(__file__).resolve().parent
 
+
 PROJECT_ROOT = resolve_project_root()
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-
-CRASH_LOG = PROJECT_ROOT / "crash.log"
+CRASH_LOG = PROJECT_ROOT / "crash_report.log"
 ACTIVITY_LOG = PROJECT_ROOT / "activity.log"
 
 
 def log_to_file(msg: str):
     """Write timestamped log to activity.log."""
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    entry = f"[{ts}] {msg}\n"
     try:
-        ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(ACTIVITY_LOG, "a", encoding="utf-8") as f:
-            f.write(f"[{ts}] {msg}\n")
+            f.write(entry)
     except Exception:
         pass
 
 
-def global_exception_handler(exc_type, exc_value, exc_tb):
-    """Catch-all for any unhandled exceptions to ensure visibility into crashes."""
-    tb_str = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-    error_msg = f"UNHANDLED FATAL EXCEPTION:\n{tb_str}"
+def global_exception_handler(exc_type, exc_value, exc_traceback):
+    """Catch unhandled fatal exceptions and write to crash_report.log."""
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
 
-    print(error_msg, file=sys.stderr)
-    log_to_file(error_msg)
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    tb_lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+    tb_text = "".join(tb_lines)
 
-    # Write to crash.log
+    report = (
+        f"====================================================\n"
+        f"CRASH REPORT - {ts}\n"
+        f"Platform: {sys.platform} ({os.name})\n"
+        f"Python Architecture: {struct.calcsize('P') * 8}-bit\n"
+        f"Python Version: {sys.version}\n"
+        f"Executable: {sys.executable}\n"
+        f"Working Dir: {os.getcwd()}\n"
+        f"----------------------------------------------------\n"
+        f"Exception: {exc_type.__name__}: {exc_value}\n\n"
+        f"Traceback:\n{tb_text}\n"
+        f"====================================================\n\n"
+    )
+
     try:
         with open(CRASH_LOG, "a", encoding="utf-8") as f:
-            ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            f.write(f"=== CRASH AT {ts} ===\n{tb_str}\n\n")
+            f.write(report)
     except Exception:
         pass
+
+    print("\n" + "=" * 60, file=sys.stderr)
+    print("UNHANDLED FATAL EXCEPTION:", file=sys.stderr)
+    print(tb_text, file=sys.stderr)
+    print(f"Crash report written to: {CRASH_LOG}", file=sys.stderr)
+    print("=" * 60 + "\n", file=sys.stderr)
 
     # Display pop-up error dialog if GUI is available
     try:
@@ -87,157 +107,77 @@ def get_system_architecture() -> Tuple[str, str]:
     return os_arch, proc_arch
 
 
-def check_and_relaunch_for_32bit() -> bool:
-    """If running in 64-bit Python on a 64-bit PC, automatically locate 32-bit Python and re-launch.
-    EzCAD 2.14.11 MarkEzd.dll is a 32-bit PE DLL requiring a 32-bit execution environment.
-    Returns True if re-launched, False otherwise.
-    """
-    if getattr(sys, "frozen", False):
-        return False  # Already running compiled binary (which is 32-bit PE)
-
-    if struct.calcsize("P") * 8 == 32:
-        return False  # Already in 32-bit Python!
-
-    if os.environ.get("AEPL_RELAUNCHED_32") or "--no-relaunch" in sys.argv:
-        return False
-
-    candidates = [
-        ["py", "-3.8-32"],
-        ["py", "-3-32"],
-    ]
-
-    local_app_data = os.environ.get("LOCALAPPDATA", "")
-    if local_app_data:
-        p38 = Path(local_app_data) / "Programs" / "Python" / "Python38-32" / "python.exe"
-        if p38.is_file():
-            candidates.append([str(p38)])
-
-    for drive in ["C", "D"]:
-        p = Path(f"{drive}:/Python38-32/python.exe")
-        if p.is_file():
-            candidates.append([str(p)])
-
-    for cmd in candidates:
-        try:
-            res = subprocess.run(
-                cmd + ["-c", "import struct; print(struct.calcsize('P')*8)"],
-                capture_output=True,
-                text=True,
-                timeout=3,
-            )
-            if res.returncode == 0 and res.stdout.strip() == "32":
-                log_to_file(f"Auto-detected 64-bit Python. Auto-switching to 32-bit runtime: {' '.join(cmd)}")
-                env = os.environ.copy()
-                env["AEPL_RELAUNCHED_32"] = "1"
-                full_cmd = cmd + [str(Path(__file__).resolve())] + sys.argv[1:]
-                ret = subprocess.run(full_cmd, env=env).returncode
-                sys.exit(ret)
-        except Exception:
-            continue
-
-    return False
-
-
 def run_diagnostics():
-    """Verify runtime environment, architecture, DLLs, and hardware ports."""
-    print("=" * 60)
-    print("AEPL RFID Laser Marking Utility — System Diagnostic Check")
-    print("=" * 60)
+    """Verify runtime environment, architecture, EzCAD executable, dynamic text file, and hardware ports."""
+    print("=" * 65)
+    print("AEPL RFID Laser Marking Utility (EzCAD GUI Automation) — Diagnostics")
+    print("=" * 65)
 
     # 1. Architecture Check
     os_arch, proc_arch = get_system_architecture()
     print(f"[*] PC Operating System Architecture : {os_arch}")
     print(f"[*] Python Process Architecture      : {proc_arch}")
+    print("    [PASS] GUI Automation mode is fully compatible with both 32-bit and 64-bit.")
 
-    if proc_arch == "32-bit":
-        print("    [PASS] 32-bit process matches EzCAD 2.14.11 requirements.")
-        if "64-bit" in os_arch:
-            print("    [PASS] Running on 64-bit Windows via WOW64 subsystem (fully supported).")
-    else:
-        print("    [NOTICE] Running in 64-bit process. EzCAD 2.14.11 MarkEzd.dll is 32-bit.")
-        print("             The app will run in SIMULATION MODE, or you can run RFID_LASER.exe")
-        print("             which automatically executes in 32-bit WOW64 mode.")
-
-    # 2. Operating System
+    # 2. Operating System Details
     print(f"\n[*] Operating System Details: {sys.platform} ({os.name})")
 
-    # 3. Companion Files Verification
-    required_files = [
-        "MarkEzd.dll",
-        "Lmc1.dll",
-        "DataMgr.dll",
-        "mathlib.dll",
-        "LMCMIO.dll",
-        "EZCAD.CFG",
-        "test.ezd",
-    ]
-    print("\n[*] Checking Required EzCAD Companion Files:")
-    all_files_ok = True
-    for fname in required_files:
-        fpath = PROJECT_ROOT / fname
-        if fpath.is_file():
-            size = fpath.stat().st_size
-            print(f"    [PASS] {fname:<15} ({size:,} bytes)")
+    # 3. Dynamic Text Input File
+    tag_input_file = PROJECT_ROOT / "tag_input.txt"
+    print("\n[*] Checking Dynamic Tag Input File (tag_input.txt):")
+    try:
+        if not tag_input_file.exists():
+            with open(tag_input_file, "w", encoding="utf-8") as f:
+                f.write("SAMPLE_TAG_ID\n")
+            print(f"    [CREATED] Created default input file at: {tag_input_file}")
         else:
-            print(f"    [FAIL] {fname:<15} NOT FOUND at {fpath}")
-            all_files_ok = False
+            size = tag_input_file.stat().st_size
+            content = tag_input_file.read_text(encoding="utf-8").strip()
+            print(f"    [PASS] tag_input.txt exists ({size} bytes, content='{content}')")
+    except Exception as e:
+        print(f"    [FAIL] Error accessing tag_input.txt: {e}")
 
-    # 4. DLL Loadability Test
-    print("\n[*] Testing MarkEzd.dll Loadability:")
-    if proc_arch == "32-bit":
-        try:
-            import ctypes
-            if hasattr(os, "add_dll_directory"):
-                try:
-                    os.add_dll_directory(str(PROJECT_ROOT))
-                except Exception:
-                    pass
-            ctypes.windll.kernel32.SetDllDirectoryW(str(PROJECT_ROOT))
-            dll_path = str(PROJECT_ROOT / "MarkEzd.dll")
-            dll = ctypes.WinDLL(dll_path)
-            print("    [PASS] MarkEzd.dll loaded successfully into process memory.")
+    # 4. Duplicate Database & Marked History
+    marked_file = PROJECT_ROOT / "marked_tags.txt"
+    history_file = PROJECT_ROOT / "marked_tags_history.csv"
+    print("\n[*] Checking Duplicate Filter Storage:")
+    for path, desc in [(marked_file, "marked_tags.txt"), (history_file, "marked_tags_history.csv")]:
+        if path.exists():
+            print(f"    [PASS] {desc} found ({path.stat().st_size} bytes)")
+        else:
+            print(f"    [READY] {desc} will be automatically initialized upon first mark.")
 
-            # Test export symbols
-            symbols = [
-                "lmc1_Initial",
-                "lmc1_Initial2",
-                "lmc1_LoadEzdFile",
-                "lmc1_ChangeTextByName",
-                "lmc1_Mark",
-                "lmc1_Close",
-            ]
-            for sym in symbols:
-                if hasattr(dll, sym):
-                    print(f"    [PASS] Symbol found: {sym}")
-                else:
-                    print(f"    [WARN] Symbol missing: {sym}")
+    # 5. EzCAD Executable Search
+    print("\n[*] Checking EzCAD Executable Installation:")
+    candidates = [
+        PROJECT_ROOT / "EzCad2.exe",
+        PROJECT_ROOT / "Ezcad.exe",
+        Path("C:/EzCad2/EzCad2.exe"),
+        Path("C:/EzCad2/Ezcad.exe"),
+        Path("C:/EzCad/Ezcad.exe"),
+        Path("D:/EzCad2/EzCad2.exe"),
+    ]
+    found_ezcad = None
+    for cand in candidates:
+        if cand.is_file():
+            found_ezcad = cand
+            break
 
-            # Test hardware controller detection
-            try:
-                hwnd = ctypes.windll.user32.CreateWindowExW(
-                    0, "STATIC", "DiagOwner", 0, 0, 0, 0, 0, 0, 0, 0, 0
-                )
-                dll.lmc1_Initial.argtypes = [ctypes.c_wchar_p, ctypes.c_int, ctypes.c_void_p]
-                dll.lmc1_Initial.restype = ctypes.c_int
-                rc = dll.lmc1_Initial(str(PROJECT_ROOT), 0, ctypes.c_void_p(hwnd))
-                if rc == 0:
-                    print("    [PASS] EzCAD LMC1 Controller Board: DETECTED & INITIALIZED on USB.")
-                    if hasattr(dll, "lmc1_Close"):
-                        dll.lmc1_Close()
-                elif rc in (3, 4):
-                    print(f"    [NOTICE] EzCAD LMC1 Controller Board: NOT CONNECTED (rc={rc}: USB Board not found).")
-                    print("             (App will run in Simulation Mode until USB board is plugged in).")
-                else:
-                    print(f"    [WARN] EzCAD LMC1 Controller Board initialization returned code: {rc}")
-            except Exception as exc:
-                print(f"    [WARN] Could not probe controller board: {exc}")
-        except Exception as e:
-            print(f"    [FAIL] Error loading MarkEzd.dll: {e}")
+    if found_ezcad:
+        print(f"    [PASS] EzCAD executable found: {found_ezcad}")
     else:
-        print("    [NOTICE] In-process DLL loading bypassed in 64-bit Python.")
-        print("             Simulation mode active. For real hardware marking, run RFID_LASER.exe.")
+        print("    [NOTICE] EzCad2.exe not found in default paths. You can browse and select")
+        print("             it directly in the application's EzCAD settings panel.")
 
-    # 5. Serial COM Ports Check
+    # 6. Template File
+    ezd_template = PROJECT_ROOT / "test.ezd"
+    print("\n[*] Checking EzCAD Template File (test.ezd):")
+    if ezd_template.is_file():
+        print(f"    [PASS] test.ezd found ({ezd_template.stat().st_size:,} bytes)")
+    else:
+        print(f"    [NOTICE] test.ezd not in root directory. Configure via application UI.")
+
+    # 7. Serial COM Ports Check
     print("\n[*] Scanning Available Serial Ports (RFID Reader):")
     try:
         from serial.tools import list_ports
@@ -250,15 +190,12 @@ def run_diagnostics():
     except Exception as e:
         print(f"    [FAIL] Could not query COM ports: {e}")
 
-    print("=" * 60)
+    print("=" * 65)
     print("Diagnostic complete. Log saved to activity.log.\n")
 
 
 def main():
-    log_to_file("Starting RFID Laser Marking Utility...")
-
-    # Auto-detect PC version: if running in 64-bit Python, auto-relaunch with 32-bit runtime
-    check_and_relaunch_for_32bit()
+    log_to_file("Starting RFID Laser Marking Utility (EzCAD GUI Automation)...")
 
     # If --diag or --verify is passed in arguments
     if "--diag" in sys.argv or "--verify" in sys.argv:
@@ -266,9 +203,9 @@ def main():
         if "--only" in sys.argv:
             sys.exit(0)
 
-    from ui.laser_app import RFIDLaserApp
+    from ui.laser_gui_app import RFIDLaserGuiApp
 
-    app = RFIDLaserApp()
+    app = RFIDLaserGuiApp()
     app.run()
 
 

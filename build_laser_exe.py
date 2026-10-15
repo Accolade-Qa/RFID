@@ -37,6 +37,13 @@ def build():
         "PyInstaller",
         "--noconfirm",
         "--windowed",
+        "--hidden-import=serial",
+        "--hidden-import=serial.tools.list_ports",
+        "--hidden-import=communication.protocol",
+        "--hidden-import=communication.uart",
+        "--hidden-import=laser.duplicate_filter",
+        "--hidden-import=laser.ezcad_gui_controller",
+        "--hidden-import=ui.laser_gui_app",
         "--name=RFID_LASER",
         str(app_dir / "laser_main.py"),
     ]
@@ -54,6 +61,13 @@ def build():
         "PyInstaller",
         "--noconfirm",
         "--console",
+        "--hidden-import=serial",
+        "--hidden-import=serial.tools.list_ports",
+        "--hidden-import=communication.protocol",
+        "--hidden-import=communication.uart",
+        "--hidden-import=laser.duplicate_filter",
+        "--hidden-import=laser.ezcad_gui_controller",
+        "--hidden-import=ui.laser_gui_app",
         "--name=RFID_LASER_debug",
         str(app_dir / "laser_main.py"),
     ]
@@ -68,8 +82,8 @@ def build():
         shutil.copy2(debug_exe, out_dir / "RFID_LASER_debug.exe")
         print("Merged RFID_LASER_debug.exe into dist/RFID_LASER/")
 
-    # 3. Copy ALL EzCAD Companion DLLs, CFG, and templates
-    print("\n[STEP 3/3] Bundling complete EzCAD runtime DLLs and client setup scripts...")
+    # 3. Copy ALL EzCAD Companion DLLs, CFG, dynamic files, and templates
+    print("\n[STEP 3/3] Bundling complete EzCAD runtime DLLs, config, and client setup scripts...")
     dll_files = glob.glob(str(app_dir / "*.dll"))
     for dll_path in dll_files:
         fname = os.path.basename(dll_path)
@@ -78,12 +92,12 @@ def build():
             shutil.copy2(dll_path, dst)
             print(f"  + Bundled DLL: {fname}")
 
-    # Copy template and CFG
-    for fname in ["EZCAD.CFG", "test.ezd"]:
+    # Copy template, dynamic input file, and CFG
+    for fname in ["EZCAD.CFG", "test.ezd", "tag_input.txt"]:
         src = app_dir / fname
         if src.is_file():
             shutil.copy2(src, out_dir / fname)
-            print(f"  + Bundled Config: {fname}")
+            print(f"  + Bundled File: {fname}")
 
     # Copy setup & diagnostic scripts
     scripts_src = app_dir / "scripts"
