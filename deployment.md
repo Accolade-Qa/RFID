@@ -11,7 +11,7 @@ In production environments, JCZ EzCAD hardware controllers (`LMC1` boards) frequ
 
 The **EzCAD GUI Automation** mode provides a 100% reliable, zero-dongle-restriction solution by leveraging the licensed, standalone EzCAD program (`EzCad2.exe` / `Ezcad.exe`):
 1. **Dynamic File Linkage**: EzCAD is configured with a **Variable Text** object reading directly from `tag_input.txt`.
-2. **Win32 Automation**: When an RFID tag is scanned, Python writes the Tag ID to `tag_input.txt`, focuses the EzCAD window, and triggers the hardware mark hotkey (**F2**).
+2. **PyAutoGUI & Win32 Automation**: When an RFID tag is scanned, Python writes the Tag ID to `tag_input.txt`, focuses the EzCAD window, and triggers the hardware mark hotkey (**F2**) using PyAutoGUI with Win32 fallback. EzCAD is automatically located on the system if placed in Downloads, Desktop, or standard paths.
 3. **Hardware Wait**: Python coordinates marking duration and pauses until laser completion before accepting the next tag.
 4. **Duplicate Prevention**: Every scanned Tag ID is checked against an in-memory set and persistent database (`marked_tags.txt` & `marked_tags_history.csv`). Duplicate tags are blocked with an immediate visual warning and never re-marked.
 

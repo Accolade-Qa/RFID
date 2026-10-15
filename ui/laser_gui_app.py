@@ -16,7 +16,7 @@ from typing import Any, Dict, Optional
 from communication.protocol import READ_TAG_ID_CMD, parse_rfid_response_frame
 from communication.uart import SerialReader
 from laser.duplicate_filter import DuplicateFilter
-from laser.ezcad_gui_controller import EzcadGuiController
+from laser.ezcad_gui_controller import EzcadGuiController, auto_detect_ezcad_exe
 from ui.laser_gui_components import (
     ActionPanel,
     CommPanel,
@@ -36,10 +36,13 @@ def resolve_app_dir() -> Path:
 APP_DIR = resolve_app_dir()
 SETTINGS_FILE = APP_DIR / "laser_gui_settings.json"
 
+_detected_ezcad = auto_detect_ezcad_exe()
+DEFAULT_EZCAD_PATH = str(_detected_ezcad) if _detected_ezcad else str(APP_DIR / "EzCad2.exe")
+
 DEFAULT_SETTINGS: Dict[str, Any] = {
     "port": "COM3",
     "baudrate": 115200,
-    "ezcad_exe": str(APP_DIR / "EzCad2.exe"),
+    "ezcad_exe": DEFAULT_EZCAD_PATH,
     "ezd_template": str(APP_DIR / "test.ezd"),
     "input_file": str(APP_DIR / "tag_input.txt"),
     "tag_prefix": "",
@@ -50,16 +53,23 @@ DEFAULT_SETTINGS: Dict[str, Any] = {
 
 
 def load_gui_settings() -> Dict[str, Any]:
+    cfg = dict(DEFAULT_SETTINGS)
+    detected = auto_detect_ezcad_exe()
+    if detected:
+        cfg["ezcad_exe"] = str(detected)
+
     if SETTINGS_FILE.is_file():
         try:
             with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
                 saved = json.load(f)
-                cfg = dict(DEFAULT_SETTINGS)
+                saved_exe = saved.get("ezcad_exe", "")
+                if saved_exe and not Path(saved_exe).is_file() and detected:
+                    saved["ezcad_exe"] = str(detected)
                 cfg.update(saved)
                 return cfg
         except Exception:
             pass
-    return dict(DEFAULT_SETTINGS)
+    return cfg
 
 
 def save_gui_settings(cfg: Dict[str, Any]):
@@ -363,14 +373,24 @@ class RFIDLaserGuiApp:
         exe_path = self.ezcad_comp.get_ezcad_exe_path()
         tmpl_path = self.ezcad_comp.get_template_path()
 
+        # If exe_path is missing or non-existent, try auto-detecting
+        if not exe_path or not Path(exe_path).is_file():
+            detected = auto_detect_ezcad_exe()
+            if detected:
+                exe_path = str(detected)
+                self.ezcad_comp.set_ezcad_exe_path(exe_path)
+                self.settings["ezcad_exe"] = exe_path
+                self.ezcad_controller.ezcad_exe_path = exe_path
+                self.log_comp.log(f"Auto-detected EzCAD executable: {exe_path}", level="INFO")
+
         if self.ezcad_controller.is_ezcad_running():
             focused = self.ezcad_controller.focus_ezcad()
             if focused:
-                self.log_comp.log("EzCAD window brought to foreground.", level="SUCCESS")
+                self.log_comp.log("EzCAD window brought to foreground via PyAutoGUI.", level="SUCCESS")
             else:
                 self.log_comp.log("EzCAD is running but could not be brought to front.", level="WARNING")
         else:
-            self.log_comp.log(f"Launching EzCAD: {exe_path} with template {tmpl_path}...", level="INFO")
+            self.log_comp.log(f"Launching EzCAD: {exe_path}...", level="INFO")
             ok, msg = self.ezcad_controller.launch_ezcad(exe_path, tmpl_path)
             if ok:
                 self.log_comp.log(msg, level="SUCCESS")

@@ -44,3 +44,31 @@ class TestEzcadGuiController:
         ok_f1, msg_f1 = ctrl.trigger_red_light(simulation_mode=True)
         assert ok_f1 is True
         assert "SIMULATION" in msg_f1
+
+    def test_auto_detect_ezcad_exe(self):
+        from laser.ezcad_gui_controller import auto_detect_ezcad_exe
+        res = auto_detect_ezcad_exe()
+        # On this workstation, EzCad2.exe exists in Downloads
+        assert res is not None
+        assert res.name.lower() == "ezcad2.exe"
+        assert res.is_file()
+
+    def test_send_key_pyautogui(self):
+        ctrl = EzcadGuiController(input_file_path=str(self.input_file))
+        # Test sending key by name
+        res_f2 = ctrl.send_key("f2")
+        assert isinstance(res_f2, bool)
+
+        # Test sending key by vk code
+        res_esc = ctrl.send_key(0x1B)
+        assert isinstance(res_esc, bool)
+
+    def test_launch_ezcad_invalid_path(self):
+        ctrl = EzcadGuiController(ezcad_exe_path="Z:/non_existent_path/fake_ezcad.exe")
+        # Overwrite ezcad_exe_path directly to bypass auto-detect
+        ctrl.ezcad_exe_path = "Z:/non_existent_path/fake_ezcad.exe"
+        # When explicit invalid path is passed
+        ok, msg = ctrl.launch_ezcad(exe_path="Z:/non_existent_path/fake_ezcad.exe")
+        assert ok is False
+        assert "not found" in msg.lower()
+

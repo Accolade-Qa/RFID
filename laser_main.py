@@ -149,24 +149,13 @@ def run_diagnostics():
 
     # 5. EzCAD Executable Search
     print("\n[*] Checking EzCAD Executable Installation:")
-    candidates = [
-        PROJECT_ROOT / "EzCad2.exe",
-        PROJECT_ROOT / "Ezcad.exe",
-        Path("C:/EzCad2/EzCad2.exe"),
-        Path("C:/EzCad2/Ezcad.exe"),
-        Path("C:/EzCad/Ezcad.exe"),
-        Path("D:/EzCad2/EzCad2.exe"),
-    ]
-    found_ezcad = None
-    for cand in candidates:
-        if cand.is_file():
-            found_ezcad = cand
-            break
+    from laser.ezcad_gui_controller import auto_detect_ezcad_exe
+    found_ezcad = auto_detect_ezcad_exe()
 
     if found_ezcad:
         print(f"    [PASS] EzCAD executable found: {found_ezcad}")
     else:
-        print("    [NOTICE] EzCad2.exe not found in default paths. You can browse and select")
+        print("    [NOTICE] EzCad2.exe not found automatically. You can browse and select")
         print("             it directly in the application's EzCAD settings panel.")
 
     # 6. Template File

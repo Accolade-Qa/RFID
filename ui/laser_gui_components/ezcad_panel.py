@@ -168,3 +168,6 @@ class EzcadPanel(ttk.LabelFrame):
 
     def set_simulation(self, sim: bool):
         self.sim_var.set(sim)
+
+    def set_ezcad_exe_path(self, path: str):
+        self.exe_var.set(path)
