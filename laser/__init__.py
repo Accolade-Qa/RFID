@@ -1,18 +1,9 @@
-"""Laser marking drivers and controller interfaces."""
+"""Laser marking controllers and duplicate prevention interfaces."""
 
-from laser.errors import EZCADError, EZCAD_ERROR_MESSAGES
-from laser.ezcad_driver import (
-    BaseLaserDriver,
-    HardwareEzcadDriver,
-    SimulationEzcadDriver,
-    create_laser_driver,
-)
+from laser.duplicate_filter import DuplicateFilter
+from laser.ezcad_gui_controller import EzcadGuiController
 
 __all__ = [
-    "EZCADError",
-    "EZCAD_ERROR_MESSAGES",
-    "BaseLaserDriver",
-    "HardwareEzcadDriver",
-    "SimulationEzcadDriver",
-    "create_laser_driver",
+    "DuplicateFilter",
+    "EzcadGuiController",
 ]

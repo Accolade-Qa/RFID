@@ -82,18 +82,9 @@ def build():
         shutil.copy2(debug_exe, out_dir / "RFID_LASER_debug.exe")
         print("Merged RFID_LASER_debug.exe into dist/RFID_LASER/")
 
-    # 3. Copy ALL EzCAD Companion DLLs, CFG, dynamic files, and templates
-    print("\n[STEP 3/3] Bundling complete EzCAD runtime DLLs, config, and client setup scripts...")
-    dll_files = glob.glob(str(app_dir / "*.dll"))
-    for dll_path in dll_files:
-        fname = os.path.basename(dll_path)
-        dst = out_dir / fname
-        if not dst.exists():
-            shutil.copy2(dll_path, dst)
-            print(f"  + Bundled DLL: {fname}")
-
-    # Copy template, dynamic input file, and CFG
-    for fname in ["EZCAD.CFG", "test.ezd", "tag_input.txt"]:
+    # 3. Copy templates, dynamic input file, scripts, and deployment guide
+    print("\n[STEP 3/3] Bundling template, dynamic input file, client scripts, and deployment guide...")
+    for fname in ["test.ezd", "tag_input.txt", "deployment.md"]:
         src = app_dir / fname
         if src.is_file():
             shutil.copy2(src, out_dir / fname)
