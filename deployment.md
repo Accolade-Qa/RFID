@@ -52,17 +52,29 @@ This guide provides end-to-end instructions for deploying, configuring, and oper
 
 ## 2. Prerequisites by Client Architecture (32-bit vs 64-bit)
 
+### ⚙️ Auto-Detection & Dual-Architecture Support:
+The application provides full support for **both 32-bit and 64-bit PCs** with automatic architecture detection:
+1. **`run.bat` (One-Click Auto-Launcher)**:
+   - Automatically detects whether the client PC is 32-bit (`x86`) or 64-bit (`AMD64`/`x64`).
+   - Automatically launches `RFID_LASER.exe` or routes to the correct runtime.
+2. **`main.py` / `laser_main.py` (Source Auto-Relauncher)**:
+   - When run on a 64-bit machine using 64-bit Python, the script auto-detects the 64-bit process, searches for 32-bit Python (`py -3.8-32` or local install paths), and **automatically re-launches under 32-bit mode**.
+   - If no 32-bit Python is present, it auto-enables **Simulation Mode** so RFID reading and template testing continue without crashing.
+3. **Compiled Executables (`RFID_LASER.exe` & `RFID_LASER_debug.exe`)**:
+   - Compiled as 32-bit PE binaries.
+   - Run natively on **32-bit Windows** and run seamlessly on **64-bit Windows** via the built-in Windows **WOW64** subsystem.
+
 ### ⚠️ Critical Architecture Note:
-Because EzCAD 2.14.11 and `MarkEzd.dll` are **32-bit (PE32) binaries**, the application is compiled as a 32-bit process.
-* **On a 32-bit Windows 7 machine (x86)**: The process runs natively and requires **32-bit (x86)** runtimes in `C:\Windows\System32`.
-* **On a 64-bit Windows 7/10 machine (x64)**: The process runs inside the **WOW64** subsystem and requires **32-bit (x86)** runtimes in `C:\Windows\SysWOW64`.
+Because EzCAD 2.14.11 and `MarkEzd.dll` are **32-bit (PE32) binaries**, the laser driver requires a 32-bit execution environment.
+* **On a 32-bit Windows machine (x86)**: The process runs natively and requires **32-bit (x86)** runtimes in `C:\Windows\System32`.
+* **On a 64-bit Windows machine (x64)**: The process runs inside the **WOW64** subsystem and requires **32-bit (x86)** runtimes in `C:\Windows\SysWOW64`.
 * **Conclusion**: **The 32-bit (x86) Visual C++ Runtimes are MANDATORY on BOTH 32-bit and 64-bit client machines!**
 
 ### Dependency Matrix:
 
 | Component | 32-bit Client PC (x86) | 64-bit Client PC (x64) | Purpose |
 | :--- | :--- | :--- | :--- |
-| **VC++ 2015–2022 (x86)** | **Required** | **Required** | Needed by Python 3.8 and runtime libraries. |
+| **VC++ 2015–2022 (x86)** | **Required** | **Required** | Needed by Python runtime and companion DLLs. |
 | **VC++ 2015–2022 (x64)** | *Not Applicable* | Optional | For 64-bit system tools. |
 | **VC++ 2010 SP1 (x86)** | **Required** | **Required** | Needed by `DataMgr.dll` and `Lmc1.dll`. |
 | **Windows 7 Update** | KB2533623 / KB2999226 | KB2533623 / KB2999226 | Universal C Runtime for Windows 7. |
@@ -201,6 +213,7 @@ The template defines the text placement, font, size, laser power, marking speed,
 3. Verify the folder contains the following complete set:
    ```text
    C:\AEPL\RFID_LASER\
+   ├── run.bat                <-- One-Click Auto-Launcher (Auto-detects 32/64-bit PC)
    ├── RFID_LASER.exe         <-- Standalone Production Executable (Clean GUI)
    ├── RFID_LASER_debug.exe   <-- Diagnostic Executable (With Live Console)
    ├── MarkEzd.dll            <-- EzCAD Core SDK DLL (32-bit)

@@ -10,15 +10,18 @@ set APP_DIR=%~dp0..
 cd /d "%APP_DIR%"
 
 :: Check if standalone exe exists
-if exist "%APP_DIR%\dist\RFID_LASER\RFID_LASER.exe" (
-    echo Running Diagnostic on compiled executable...
+if exist "%APP_DIR%\dist\RFID_LASER\RFID_LASER_debug.exe" (
+    echo Running Diagnostic on compiled debug executable...
+    "%APP_DIR%\dist\RFID_LASER\RFID_LASER_debug.exe" --diag --only
+) else if exist "%APP_DIR%\dist\RFID_LASER\RFID_LASER.exe" (
+    echo Running Diagnostic on compiled production executable...
     "%APP_DIR%\dist\RFID_LASER\RFID_LASER.exe" --diag --only
 ) else if exist "%APP_DIR%\RFID_LASER.exe" (
     echo Running Diagnostic on root executable...
     "%APP_DIR%\RFID_LASER.exe" --diag --only
 ) else (
-    echo Running Diagnostic via 32-bit Python runtime...
-    py -3.8-32 laser_main.py --diag --only
+    echo Running Diagnostic with Python (auto-detecting 32/64-bit runtime)...
+    python laser_main.py --diag --only
 )
 
 echo.

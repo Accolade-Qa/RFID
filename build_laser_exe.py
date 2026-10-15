@@ -94,6 +94,12 @@ def build():
         shutil.copytree(scripts_src, scripts_dst)
         print("  + Bundled client scripts/ directory")
 
+    # Copy auto-launcher run.bat
+    run_bat = app_dir / "run.bat"
+    if run_bat.is_file():
+        shutil.copy2(run_bat, out_dir / "run.bat")
+        print("  + Bundled auto-launcher: run.bat")
+
     print("\n==========================================================")
     print("[SUCCESS] Build Complete! Package ready in:")
     print(f"  -> {out_dir}")
